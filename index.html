@@ -1,45 +1,117 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NewEnergy • Login</title>
-<style>
-    body { margin:0; padding:0; display:flex; align-items:center; justify-content:center; height:100vh; background:linear-gradient(135deg,#000,#1e1e1e); font-family:Arial,sans-serif; color:white; }
-    .login-box { width:90%; max-width:360px; background:#111; padding:30px; border-radius:15px; box-shadow:0 0 25px rgba(255,255,0,0.3); border:1px solid #333; text-align:center; }
-    .login-box h2 { margin-bottom:20px; color:#f1c40f; }
-    input { width:100%; padding:12px; margin-top:10px; border:none; border-radius:8px; background:#222; color:white; font-size:15px; outline:none; }
-    button { width:100%; margin-top:15px; padding:12px; background:#f1c40f; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer; }
-    button:hover { background:#ffe35a; }
-    .msg-erro { color:#ff5757; margin-top:12px; font-size:14px; display:none; }
-    .tab-btn { width:48%; margin-right:4%; padding:8px; border-radius:6px; border:none; cursor:pointer; font-weight:bold; }
-    .tab-btn:last-child { margin-right:0; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewEnergy • Login / Cadastro</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #000000, #1e1e1e);
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        .box {
+            width: 90%;
+            max-width: 360px;
+            background: #111;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px rgba(255, 255, 0, 0.3);
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        .box h2 {
+            margin-bottom: 20px;
+            color: #f1c40f;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 8px;
+            background: #222;
+            color: white;
+            font-size: 15px;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 18px;
+            padding: 12px;
+            background: #f1c40f;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ffe35a;
+        }
+
+        .msg {
+            color: #ff5757;
+            margin-top: 12px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: #222;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .tab.active {
+            background: #f1c40f;
+            color: #000;
+        }
+    </style>
 </head>
 <body>
 
-<div class="login-box">
-    <h2>NewEnergy</h2>
-    <div style="margin-bottom:15px;">
-        <button class="tab-btn" onclick="mostrarLogin()">Login</button>
-        <button class="tab-btn" onclick="mostrarCadastro()">Cadastro</button>
+<div class="box">
+    <div class="tabs">
+        <div class="tab active" id="tabLogin" onclick="showTab('login')">Login</div>
+        <div class="tab" id="tabCadastro" onclick="showTab('cadastro')">Cadastro</div>
     </div>
 
     <!-- LOGIN -->
-    <div id="loginSection">
+    <div id="loginBox">
         <input type="email" id="loginEmail" placeholder="Email">
         <input type="password" id="loginSenha" placeholder="Senha">
         <button onclick="login()">Entrar</button>
+        <div class="msg" id="msgLogin"></div>
     </div>
 
     <!-- CADASTRO -->
-    <div id="cadastroSection" style="display:none;">
+    <div id="cadastroBox" style="display:none;">
         <input type="email" id="cadEmail" placeholder="Email">
         <input type="password" id="cadSenha" placeholder="Senha">
         <button onclick="cadastrar()">Cadastrar</button>
+        <div class="msg" id="msgCadastro"></div>
     </div>
-
-    <div class="msg-erro" id="erro">Erro: usuário ou senha incorretos.</div>
 </div>
 
 <!-- Firebase -->
@@ -48,7 +120,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
 
 <script>
-const firebaseConfig = { 
+  // Configuração do Firebase
+  const firebaseConfig = {
     apiKey: "AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
     authDomain: "controle-led-esp-oficial.firebaseapp.com",
     databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
@@ -56,69 +129,68 @@ const firebaseConfig = {
     storageBucket: "controle-led-esp-oficial.firebasestorage.app",
     messagingSenderId: "1082980860084",
     appId: "1:1082980860084:web:b3b669b8f1801c3d6657e1"
-};
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const database = firebase.database();
+  };
 
-// Alternar abas
-function mostrarLogin(){
-    document.getElementById("loginSection").style.display = "block";
-    document.getElementById("cadastroSection").style.display = "none";
-    document.getElementById("erro").style.display = "none";
-}
-function mostrarCadastro(){
-    document.getElementById("loginSection").style.display = "none";
-    document.getElementById("cadastroSection").style.display = "block";
-    document.getElementById("erro").style.display = "none";
-}
+  // Inicializa Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const database = firebase.database();
 
-// Cadastro
-function cadastrar(){
-    const email = document.getElementById("cadEmail").value;
-    const senha = document.getElementById("cadSenha").value;
-    if(!email || !senha){ alert("Preencha todos os campos!"); return; }
+  // Troca de abas
+  function showTab(tab){
+      document.getElementById("loginBox").style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById("cadastroBox").style.display = tab === 'cadastro' ? 'block' : 'none';
+      document.getElementById("tabLogin").classList.toggle("active", tab==='login');
+      document.getElementById("tabCadastro").classList.toggle("active", tab==='cadastro');
+      document.getElementById("msgLogin").style.display = "none";
+      document.getElementById("msgCadastro").style.display = "none";
+  }
 
-    auth.createUserWithEmailAndPassword(email, senha)
-    .then((userCredential)=>{
-        const uid = userCredential.user.uid;
-        database.ref('usuarios/' + uid).set({
-            email: email,
-            statusPagamento: false,
-            dataCadastro: new Date().toISOString()
-        });
-        alert("Cadastro realizado! Aguarde liberação após pagamento.");
-    })
-    .catch((error)=>{
-        document.getElementById("erro").innerText = error.message;
-        document.getElementById("erro").style.display = "block";
-    });
-}
+  // Função login
+  function login(){
+      const email = document.getElementById("loginEmail").value;
+      const senha = document.getElementById("loginSenha").value;
+      if(!email || !senha){
+          document.getElementById("msgLogin").innerText = "Preencha todos os campos!";
+          document.getElementById("msgLogin").style.display = "block";
+          return;
+      }
+      auth.signInWithEmailAndPassword(email, senha)
+          .then(userCredential => {
+              console.log("Login OK:", userCredential.user.uid);
+              window.location.href = "painel.html";
+          })
+          .catch(error => {
+              console.error("Erro login:", error);
+              document.getElementById("msgLogin").innerText = error.message;
+              document.getElementById("msgLogin").style.display = "block";
+          });
+  }
 
-// Login
-function login(){
-    const email = document.getElementById("loginEmail").value;
-    const senha = document.getElementById("loginSenha").value;
-    if(!email || !senha){ alert("Preencha todos os campos!"); return; }
-
-    auth.signInWithEmailAndPassword(email, senha)
-    .then((userCredential)=>{
-        const uid = userCredential.user.uid;
-        database.ref('usuarios/' + uid + '/statusPagamento').once('value')
-        .then(snapshot=>{
-            if(snapshot.val()===true){
-                window.location.href = "painel.html";
-            } else {
-                alert("Pagamento não identificado. Acesso bloqueado.");
-                auth.signOut();
-            }
-        });
-    })
-    .catch((error)=>{
-        document.getElementById("erro").innerText = error.message;
-        document.getElementById("erro").style.display = "block";
-    });
-}
+  // Função cadastro
+  function cadastrar(){
+      const email = document.getElementById("cadEmail").value;
+      const senha = document.getElementById("cadSenha").value;
+      if(!email || !senha){
+          document.getElementById("msgCadastro").innerText = "Preencha todos os campos!";
+          document.getElementById("msgCadastro").style.display = "block";
+          return;
+      }
+      auth.createUserWithEmailAndPassword(email, senha)
+          .then(userCredential => {
+              console.log("Usuário criado:", userCredential.user.uid);
+              document.getElementById("msgCadastro").innerText = "Cadastro realizado! Aguarde liberação após pagamento.";
+              document.getElementById("msgCadastro").style.color = "#4cff4c";
+              document.getElementById("msgCadastro").style.display = "block";
+          })
+          .catch(error => {
+              console.error("Erro cadastro:", error);
+              document.getElementById("msgCadastro").innerText = error.message;
+              document.getElementById("msgCadastro").style.color = "#ff5757";
+              document.getElementById("msgCadastro").style.display = "block";
+          });
+  }
 </script>
+
 </body>
 </html>
