@@ -4,62 +4,63 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NewEnergy • Painel</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+<!-- Firebase compat -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
-body { margin:0; padding:0; font-family:Arial,sans-serif; background:#000; color:white; }
+body { margin:0; padding:0; font-family: Arial,sans-serif; background:#000; color:white; }
 header { background:#111; padding:10px; text-align:center; font-size:18px; color:#f1c40f; border-bottom:1px solid #222; }
-.container { padding:10px; display:flex; flex-direction:column; gap:15px; max-width:400px; margin:auto; }
+.container { padding:10px; max-width:400px; margin:auto; display:flex; flex-direction:column; gap:15px; }
 .card { background:#111; padding:12px; border-radius:10px; border:1px solid #333; box-shadow:0 0 6px rgba(255,255,0,0.1); }
 .card h3 { margin-bottom:10px; font-size:16px; color:#f1c40f; }
 .status-online { color:#4cff4c; font-weight:bold; font-size:14px; }
 .status-offline { color:#ff5757; font-weight:bold; font-size:14px; }
-canvas { width:130px !important; height:130px !important; margin:auto; display:block; }
-button { width:100%; padding:10px; background:#f1c40f; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; color:#000; }
+canvas { width:130px !important; height:130px !important; display:block; margin:auto; }
+button { width:100%; padding:10px; background:#f1c40f; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; color:#000; margin-top:5px; }
 button:hover { background:#ffe35a; }
 input { width:100%; padding:8px; margin-top:5px; border-radius:6px; border:none; background:#222; color:#fff; font-size:14px; }
 </style>
 </head>
 <body>
-<header>Painel de Controle • NewEnergy</header>
 
+<header>Painel de Controle • NewEnergy</header>
 <div class="container">
 
+    <!-- STATUS -->
     <div class="card">
         <h3>Status do Dispositivo</h3>
         <p id="status" class="status-offline">Offline</p>
     </div>
 
+    <!-- GAUGES -->
     <div class="card">
         <h3>Sensores</h3>
-        <canvas id="gaugeTemp"></canvas>
-        <br>
+        <canvas id="gaugeTemp"></canvas><br>
         <canvas id="gaugeUmid"></canvas>
     </div>
 
+    <!-- CONTROLE LED -->
     <div class="card">
         <h3>Controle do LED</h3>
-        <button onclick="toggleLED()">Ligar / Desligar LED</button>
+        <button id="btnLED">Ligar / Desligar LED</button>
     </div>
 
+    <!-- ALERTA TEMPERATURA -->
     <div class="card">
         <h3>Ajustar Alerta de Temperatura</h3>
         <input type="number" id="tempAlerta" placeholder="Ex: 30">
-        <button onclick="salvarAlerta()">Salvar Temperatura de Alerta</button>
-    </div>
-
-    <div class="card">
-        <h3>Histórico Mensal</h3>
-        <button onclick="exportarCSV()">Exportar CSV</button>
+        <button id="btnAlerta">Salvar Temperatura de Alerta</button>
     </div>
 
 </div>
 
 <script>
-const firebaseConfig = { 
+  // Firebase config
+  const firebaseConfig = {
     apiKey: "AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
     authDomain: "controle-led-esp-oficial.firebaseapp.com",
     databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
@@ -67,125 +68,81 @@ const firebaseConfig = {
     storageBucket: "controle-led-esp-oficial.firebasestorage.app",
     messagingSenderId: "1082980860084",
     appId: "1:1082980860084:web:b3b669b8f1801c3d6657e1"
-};
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const database = firebase.database();
+  };
 
-let uid;
-let gaugeTemp, gaugeUmid;
-let tempRef, umidRef, ledRef, alertaRef, historicoRef;
+  // Inicializa Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-// Aguarda DOM carregar
-window.onload = function() {
+  // Gauges Chart.js
+  const ctxTemp = document.getElementById("gaugeTemp");
+  const gaugeTemp = new Chart(ctxTemp, {
+      type: "doughnut",
+      data: { labels:["Temp"], datasets:[{data:[0,100], backgroundColor:["#ff3b3b","#222"], borderWidth:0}]},
+      options: { circumference:180, rotation:270, cutout:"80%", plugins:{legend:{display:false}} }
+  });
 
-    // Bloqueia acesso se não logado
-    auth.onAuthStateChanged(user => {
-        if(!user) window.location.href="index.html";
-        else {
-            uid = user.uid;
-            initFirebaseRefs();
-            initGauges();
-            listenRealtime();
-        }
-    });
-}
+  const ctxUmid = document.getElementById("gaugeUmid");
+  const gaugeUmid = new Chart(ctxUmid, {
+      type: "doughnut",
+      data: { labels:["Umid"], datasets:[{data:[0,100], backgroundColor:["#3498db","#222"], borderWidth:0}]},
+      options: { circumference:180, rotation:270, cutout:"80%", plugins:{legend:{display:false}} }
+  });
 
-// Inicializa referências Firebase
-function initFirebaseRefs() {
-    tempRef = database.ref('sensores/temperatura/' + uid);
-    umidRef = database.ref('sensores/umidade/' + uid);
-    ledRef = database.ref('led/status/' + uid);
-    alertaRef = database.ref('alerta/temperatura/' + uid);
-    historicoRef = database.ref('leituras/' + uid);
-}
+  const statusEl = document.getElementById("status");
+  const btnLED = document.getElementById("btnLED");
+  const tempAlertaEl = document.getElementById("tempAlerta");
+  const btnAlerta = document.getElementById("btnAlerta");
 
-// Inicializa gauges
-function initGauges() {
-    const ctxTemp = document.getElementById("gaugeTemp");
-    gaugeTemp = new Chart(ctxTemp, {
-        type:"doughnut",
-        data:{labels:["Temp"], datasets:[{data:[50,50], backgroundColor:["#ff3b3b","#222"], borderWidth:0}]},
-        options:{circumference:180, rotation:270, cutout:"80%", plugins:{legend:{display:false}}}
-    });
+  let ledState = false;
 
-    const ctxUmid = document.getElementById("gaugeUmid");
-    gaugeUmid = new Chart(ctxUmid, {
-        type:"doughnut",
-        data:{labels:["Umid"], datasets:[{data:[50,50], backgroundColor:["#3498db","#222"], borderWidth:0}]},
-        options:{circumference:180, rotation:270, cutout:"80%", plugins:{legend:{display:false}}}
-    });
-}
+  // Atualiza valores do Firebase
+  function atualizarDados(snapshot){
+      const data = snapshot.val();
+      if(data){
+          // Temperatura
+          gaugeTemp.data.datasets[0].data[0] = data.temperatura;
+          gaugeTemp.data.datasets[0].data[1] = 100 - data.temperatura;
+          gaugeTemp.update();
 
-// Escuta valores em tempo real
-function listenRealtime() {
+          // Umidade
+          gaugeUmid.data.datasets[0].data[0] = data.umidade;
+          gaugeUmid.data.datasets[0].data[1] = 100 - data.umidade;
+          gaugeUmid.update();
 
-    tempRef.on('value', snap=>{
-        const t = snap.val() || 0;
-        gaugeTemp.data.datasets[0].data[0] = t;
-        gaugeTemp.data.datasets[0].data[1] = 100 - t;
-        gaugeTemp.update();
-    });
+          // Status
+          statusEl.innerText = "Online";
+          statusEl.className = "status-online";
 
-    umidRef.on('value', snap=>{
-        const u = snap.val() || 0;
-        gaugeUmid.data.datasets[0].data[0] = u;
-        gaugeUmid.data.datasets[0].data[1] = 100 - u;
-        gaugeUmid.update();
-    });
+          // LED
+          ledState = data.led;
+          btnLED.innerText = ledState ? "Desligar LED" : "Ligar LED";
+      } else {
+          statusEl.innerText = "Offline";
+          statusEl.className = "status-offline";
+      }
+  }
 
-    ledRef.on('value', snap=>{
-        const estado = snap.exists() ? snap.val() : false;
-        document.getElementById("status").innerText = estado ? "Online" : "Offline";
-        document.getElementById("status").className = estado ? "status-online" : "status-offline";
-    });
+  // Escuta dados em tempo real
+  db.ref("/sensores").on("value", atualizarDados);
 
-    // Checa pagamento do usuário
-    database.ref('usuarios/' + uid + '/statusPagamento').once('value')
-    .then(snapshot=>{
-        if(snapshot.val()!==true){
-            alert("Pagamento não identificado. Acesso bloqueado.");
-            auth.signOut();
-            window.location.href = "index.html";
-        }
-    });
-}
+  // Controle LED
+  btnLED.addEventListener("click", ()=>{
+      ledState = !ledState;
+      db.ref("/sensores/led").set(ledState);
+  });
 
-// Funções de controle
-function toggleLED() {
-    ledRef.once('value').then(snap=>{
-        const estado = snap.val() || false;
-        ledRef.set(!estado);
-    });
-}
-
-function salvarAlerta() {
-    const valor = document.getElementById("tempAlerta").value;
-    if(!valor) return alert("Digite uma temperatura!");
-    alertaRef.set(Number(valor));
-    alert("Temperatura de alerta salva: " + valor + "°C");
-}
-
-// Exporta CSV histórico
-function exportarCSV() {
-    historicoRef.once('value').then(snapshot=>{
-        let csv = "Data,Hora,Temperatura,Umidade\n";
-        snapshot.forEach(diaSnap=>{
-            const dia = diaSnap.key;
-            diaSnap.forEach(horaSnap=>{
-                const hora = horaSnap.key;
-                const temp = horaSnap.val().temp;
-                const umid = horaSnap.val().umid;
-                csv += `${dia},${hora},${temp},${umid}\n`;
-            });
-        });
-        const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "historico_mensal.csv";
-        link.click();
-    });
-}
+  // Ajuste de alerta de temperatura
+  btnAlerta.addEventListener("click", ()=>{
+      const temp = parseFloat(tempAlertaEl.value);
+      if(isNaN(temp)){
+          alert("Digite um valor válido!");
+          return;
+      }
+      db.ref("/sensores/alertaTemp").set(temp);
+      alert("Temperatura de alerta salva: " + temp + "°C");
+  });
 </script>
+
 </body>
 </html>
