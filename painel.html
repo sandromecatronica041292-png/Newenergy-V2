@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NewEnergy • Painel</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -21,21 +20,34 @@ header{background:#111;padding:10px;text-align:center;font-size:18px;color:#f1c4
 canvas{width:100%!important;height:200px!important;display:block;margin:auto;}
 button{width:100%;padding:10px;background:#f1c40f;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;color:#000;margin-top:5px;}
 button:hover{background:#ffe35a;}
-table{width:100%;border-collapse:collapse;margin-top:10px;color:white;}
-th, td{padding:8px;border:1px solid #333;text-align:center;}
-select{width:100%;padding:6px;margin-top:5px;border-radius:6px;border:none;background:#222;color:#fff;font-size:14px;}
+.alertas{display:flex;justify-content:space-around;margin-top:10px;}
+.alerta{background:#222;padding:10px;border-radius:8px;text-align:center;width:48%;}
+.alerta h4{margin:0;color:#f1c40f;font-size:14px;}
+.alerta p{margin:5px 0 0;font-size:16px;font-weight:bold;}
 </style>
 </head>
 <body>
 <header>Painel de Controle • NewEnergy</header>
 <div class="container">
 
-<div class="card"><h3>Status do Dispositivo</h3><p id="status" class="status-offline">Offline</p></div>
+<div class="card">
+  <h3>Status do Dispositivo</h3>
+  <p id="status" class="status-offline">Offline</p>
+</div>
 
 <div class="card">
-  <h3>Sensores</h3>
-  <canvas id="gaugeTemp"></canvas><br>
-  <canvas id="gaugeUmid"></canvas>
+  <h3>Resumo Diário</h3>
+  <canvas id="graficoResumo"></canvas>
+  <div class="alertas">
+    <div class="alerta">
+      <h4>Temperatura fora do limite</h4>
+      <p id="exTemp">0</p>
+    </div>
+    <div class="alerta">
+      <h4>Umidade fora do limite</h4>
+      <p id="exUmid">0</p>
+    </div>
+  </div>
 </div>
 
 <div class="card">
@@ -43,29 +55,9 @@ select{width:100%;padding:6px;margin-top:5px;border-radius:6px;border:none;backg
   <button id="btnLED">Ligar / Desligar LED</button>
 </div>
 
-<div class="card">
-  <h3>Monitoramento Histórico</h3>
-  <select id="periodo">
-    <option value="diario">Diário</option>
-    <option value="semanal">Semanal</option>
-    <option value="mensal">Mensal</option>
-    <option value="anual">Anual</option>
-  </select>
-  <canvas id="graficoHistorico"></canvas>
-  <table id="tabelaHistorico">
-    <thead>
-      <tr><th>Data</th><th>Temperatura (°C)</th><th>Umidade (%)</th></tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-  <button id="btnRelatorio">Gerar Relatório PDF</button>
-</div>
-
 </div>
 
 <script>
-const { jsPDF } = window.jspdf;
-
 const firebaseConfig = {
   apiKey:"AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
   authDomain:"controle-led-esp-oficial.firebaseapp.com",
@@ -79,38 +71,20 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.database();
 
-const ctxTemp = document.getElementById("gaugeTemp");
-const gaugeTemp = new Chart(ctxTemp,{
-    type:"doughnut",
-    data:{labels:["Temp"],datasets:[{data:[0,100],backgroundColor:["#ff3b3b","#222"],borderWidth:0}]},
-    options:{circumference:180,rotation:270,cutout:"80%",plugins:{legend:{display:false}}}
-});
-
-const ctxUmid = document.getElementById("gaugeUmid");
-const gaugeUmid = new Chart(ctxUmid,{
-    type:"doughnut",
-    data:{labels:["Umid"],datasets:[{data:[0,100],backgroundColor:["#3498db","#222"],borderWidth:0}]},
-    options:{circumference:180,rotation:270,cutout:"80%",plugins:{legend:{display:false}}}
-});
-
-const ctxHistorico = document.getElementById("graficoHistorico");
-let graficoHistorico = new Chart(ctxHistorico,{
-    type:"line",
-    data:{labels:[], datasets:[
-        {label:"Temperatura (°C)", data:[], borderColor:"#ff3b3b", backgroundColor:"rgba(255,59,59,0.2)", tension:0.3},
-        {label:"Umidade (%)", data:[], borderColor:"#3498db", backgroundColor:"rgba(52,152,219,0.2)", tension:0.3}
-    ]},
-    options:{plugins:{legend:{labels:{color:"#fff"}}},scales:{x:{ticks:{color:"#fff"}},y:{ticks:{color:"#fff"}}}}
-});
-
 const statusEl = document.getElementById("status");
 const btnLED = document.getElementById("btnLED");
-const periodoEl = document.getElementById("periodo");
-const tabelaBody = document.querySelector("#tabelaHistorico tbody");
-const btnRelatorio = document.getElementById("btnRelatorio");
+const exTempEl = document.getElementById("exTemp");
+const exUmidEl = document.getElementById("exUmid");
+const ctxResumo = document.getElementById("graficoResumo");
 
-let ledState = false;
-let espID = "";
+let graficoResumo = new Chart(ctxResumo,{
+    type:"bar",
+    data:{labels:["Temperatura","Umidade"],datasets:[{label:"Média diária",data:[0,0],backgroundColor:["#ff3b3b","#3498db"]}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+});
+
+let ledState=false;
+let espID="";
 
 // Usuário logado
 auth.onAuthStateChanged(user=>{
@@ -120,23 +94,11 @@ auth.onAuthStateChanged(user=>{
             espID = snapshot.val();
             if(!espID){alert("Nenhum ESP32 vinculado!"); return;}
             
-            // Atualiza dados em tempo real
+            // Atualiza status e LED em tempo real
             db.ref("/esp32/"+espID).on("value", snapshot=>{
                 const data = snapshot.val();
                 if(data){
-                    const temp = data.temperatura;
-                    const umid = data.umidade;
-
-                    gaugeTemp.data.datasets[0].data[0] = temp;
-                    gaugeTemp.data.datasets[0].data[1] = 100-temp;
-                    gaugeTemp.update();
-
-                    gaugeUmid.data.datasets[0].data[0] = umid;
-                    gaugeUmid.data.datasets[0].data[1] = 100-umid;
-                    gaugeUmid.update();
-
                     statusEl.innerText="Online"; statusEl.className="status-online";
-
                     ledState = data.led;
                     btnLED.innerText = ledState?"Desligar LED":"Ligar LED";
                 } else {
@@ -144,79 +106,41 @@ auth.onAuthStateChanged(user=>{
                 }
             });
 
-            // Atualiza histórico
-            function atualizarHistorico(periodo){
+            // Calcula média diária e contagem de extrapolações
+            function atualizarResumo(){
                 db.ref("/historico/"+espID).once("value").then(snapshot=>{
                     const data = snapshot.val();
                     if(!data) return;
 
-                    let labels = [], tempData=[], umidData=[];
-                    let rows = [];
+                    let tempSoma=0, umidSoma=0, count=0;
+                    let exTemp=0, exUmid=0;
                     const agora = new Date();
-
                     for(const key in data){
                         const item = data[key];
                         const dt = new Date(item.timestamp);
-                        let incluir=false;
-
-                        switch(periodo){
-                            case "diario": incluir = dt.toDateString()===agora.toDateString(); break;
-                            case "semanal": const semanaInicio=new Date(agora); semanaInicio.setDate(agora.getDate()-7); incluir = dt>=semanaInicio; break;
-                            case "mensal": incluir = dt.getMonth()===agora.getMonth() && dt.getFullYear()===agora.getFullYear(); break;
-                            case "anual": incluir = dt.getFullYear()===agora.getFullYear(); break;
-                        }
-
-                        if(incluir){
-                            labels.push(dt.toLocaleString());
-                            tempData.push(item.temperatura);
-                            umidData.push(item.umidade);
-                            rows.push(`<tr><td>${dt.toLocaleString()}</td><td>${item.temperatura}</td><td>${item.umidade}</td></tr>`);
+                        if(dt.toDateString()===agora.toDateString()){
+                            tempSoma += item.temperatura;
+                            umidSoma += item.umidade;
+                            count++;
+                            // Limites do ESP32
+                            if(item.temperatura>item.limiteMaxTemp || item.temperatura<item.limiteMinTemp) exTemp++;
+                            if(item.umidade>item.limiteMaxUmid || item.umidade<item.limiteMinUmid) exUmid++;
                         }
                     }
+                    const mediaTemp = count>0?tempSoma/count:0;
+                    const mediaUmid = count>0?umidSoma/count:0;
 
-                    graficoHistorico.data.labels=labels;
-                    graficoHistorico.data.datasets[0].data=tempData;
-                    graficoHistorico.data.datasets[1].data=umidData;
-                    graficoHistorico.update();
+                    graficoResumo.data.datasets[0].data=[mediaTemp,mediaUmid];
+                    graficoResumo.update();
 
-                    tabelaBody.innerHTML = rows.join("");
+                    exTempEl.innerText=exTemp;
+                    exUmidEl.innerText=exUmid;
                 });
             }
 
-            atualizarHistorico(periodoEl.value);
-            periodoEl.addEventListener("change", ()=>atualizarHistorico(periodoEl.value));
-
-            // Gerar PDF
-            btnRelatorio.addEventListener("click", ()=>{
-                const doc = new jsPDF();
-                doc.setFontSize(18);
-                doc.setTextColor(0,0,0);
-                doc.text("Relatório NewEnergy", 105, 15, null, null, "center");
-                doc.setFontSize(12);
-                doc.text(`Período: ${periodoEl.value}`, 105, 25, null, null, "center");
-
-                // Tabela
-                const tableRows = [];
-                tabelaBody.querySelectorAll("tr").forEach(tr=>{
-                    const cols = Array.from(tr.querySelectorAll("td")).map(td=>td.innerText);
-                    tableRows.push(cols);
-                });
-                doc.autoTable({
-                    head:[["Data","Temperatura (°C)","Umidade (%)"]],
-                    body:tableRows,
-                    startY:35,
-                    theme:"grid"
-                });
-
-                // Gráfico
-                const chartCanvas = ctxHistorico;
-                const chartImg = chartCanvas.toDataURL("image/png", 1.0);
-                doc.addPage();
-                doc.text("Gráfico de Temperatura e Umidade", 105, 15, null, null, "center");
-                doc.addImage(chartImg, "PNG", 15, 25, 180, 100);
-
-                doc.save(`Relatorio_${periodoEl.value}.pdf`);
-            });
+            atualizarResumo();
+            // Atualiza a cada 30s
+            setInterval(atualizarResumo,30000);
         });
     } else {
         alert("Usuário não logado!");
