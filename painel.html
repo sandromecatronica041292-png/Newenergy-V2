@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NewEnergy • Painel</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -57,11 +58,14 @@ select{width:100%;padding:6px;margin-top:5px;border-radius:6px;border:none;backg
     </thead>
     <tbody></tbody>
   </table>
+  <button id="btnRelatorio">Gerar Relatório PDF</button>
 </div>
 
 </div>
 
 <script>
+const { jsPDF } = window.jspdf;
+
 const firebaseConfig = {
   apiKey:"AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
   authDomain:"controle-led-esp-oficial.firebaseapp.com",
@@ -103,6 +107,7 @@ const statusEl = document.getElementById("status");
 const btnLED = document.getElementById("btnLED");
 const periodoEl = document.getElementById("periodo");
 const tabelaBody = document.querySelector("#tabelaHistorico tbody");
+const btnRelatorio = document.getElementById("btnRelatorio");
 
 let ledState = false;
 let espID = "";
@@ -180,6 +185,38 @@ auth.onAuthStateChanged(user=>{
 
             atualizarHistorico(periodoEl.value);
             periodoEl.addEventListener("change", ()=>atualizarHistorico(periodoEl.value));
+
+            // Gerar PDF
+            btnRelatorio.addEventListener("click", ()=>{
+                const doc = new jsPDF();
+                doc.setFontSize(18);
+                doc.setTextColor(0,0,0);
+                doc.text("Relatório NewEnergy", 105, 15, null, null, "center");
+                doc.setFontSize(12);
+                doc.text(`Período: ${periodoEl.value}`, 105, 25, null, null, "center");
+
+                // Tabela
+                const tableRows = [];
+                tabelaBody.querySelectorAll("tr").forEach(tr=>{
+                    const cols = Array.from(tr.querySelectorAll("td")).map(td=>td.innerText);
+                    tableRows.push(cols);
+                });
+                doc.autoTable({
+                    head:[["Data","Temperatura (°C)","Umidade (%)"]],
+                    body:tableRows,
+                    startY:35,
+                    theme:"grid"
+                });
+
+                // Gráfico
+                const chartCanvas = ctxHistorico;
+                const chartImg = chartCanvas.toDataURL("image/png", 1.0);
+                doc.addPage();
+                doc.text("Gráfico de Temperatura e Umidade", 105, 15, null, null, "center");
+                doc.addImage(chartImg, "PNG", 15, 25, 180, 100);
+
+                doc.save(`Relatorio_${periodoEl.value}.pdf`);
+            });
         });
     } else {
         alert("Usuário não logado!");
