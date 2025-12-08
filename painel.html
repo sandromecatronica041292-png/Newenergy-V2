@@ -48,6 +48,7 @@ button:hover{background:#ffe35a;}
       <p id="exUmid">0</p>
     </div>
   </div>
+  <button onclick="window.location.href='historico.html'">Ver Histórico Completo</button>
 </div>
 
 <div class="card">
@@ -139,7 +140,6 @@ auth.onAuthStateChanged(user=>{
             }
 
             atualizarResumo();
-            // Atualiza a cada 30s
             setInterval(atualizarResumo,30000);
         });
     } else {
