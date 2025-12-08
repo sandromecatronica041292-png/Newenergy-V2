@@ -48,6 +48,11 @@ button:hover{background:#ffe35a;}
       <p id="exUmid">0</p>
     </div>
   </div>
+</div>
+
+<!-- BOTÃO VISÍVEL PARA HISTÓRICO -->
+<div class="card">
+  <h3>Histórico Completo</h3>
   <button onclick="window.location.href='historico.html'">Ver Histórico Completo</button>
 </div>
 
@@ -123,7 +128,6 @@ auth.onAuthStateChanged(user=>{
                             tempSoma += item.temperatura;
                             umidSoma += item.umidade;
                             count++;
-                            // Limites do ESP32
                             if(item.temperatura>item.limiteMaxTemp || item.temperatura<item.limiteMinTemp) exTemp++;
                             if(item.umidade>item.limiteMaxUmid || item.umidade<item.limiteMinUmid) exUmid++;
                         }
