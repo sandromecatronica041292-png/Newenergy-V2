@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewEnergy • Painel</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: white;
+        }
+
+        header {
+            background: #111;
+            padding: 15px;
+            text-align: center;
+            font-size: 22px;
+            color: #f1c40f;
+            border-bottom: 2px solid #222;
+        }
+
+        .container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: #111;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #333;
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #f1c40f;
+        }
+
+        .status-online {
+            color: #4cff4c;
+            font-weight: bold;
+        }
+
+        .status-offline {
+            color: #ff5757;
+            font-weight: bold;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #f1c40f;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #000;
+        }
+
+        button:hover {
+            background: #ffe35a;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: none;
+            background: #222;
+            color: #fff;
+        }
+    </style>
+
+</head>
+<body>
+
+<header>
+    Painel de Controle • NewEnergy
+</header>
+
+<div class="container">
+
+    <!-- STATUS DO ESP32 -->
+    <div class="card">
+        <h3>Status do Dispositivo</h3>
+        <p id="status" class="status-offline">Offline</p>
+    </div>
+
+    <!-- GAUGES -->
+    <div class="card">
+        <h3>Sensores</h3>
+        <canvas id="gaugeTemp"></canvas>
+        <br>
+        <canvas id="gaugeUmid"></canvas>
+    </div>
+
+    <!-- CONTROLE DO LED -->
+    <div class="card">
+        <h3>Controle do LED</h3>
+        <button onclick="toggleLED()">Ligar / Desligar LED</button>
+    </div>
+
+    <!-- AJUSTE DE ALERTA -->
+    <div class="card">
+        <h3>Ajustar Alerta de Temperatura</h3>
+        <input type="number" id="tempAlerta" placeholder="Ex: 30">
+        <button onclick="salvarAlerta()">Salvar Temperatura de Alerta</button>
+    </div>
+
+</div>
+
+<script>
+
+    // -------------------------------
+    // GAUGE TEMPERATURA
+    // -------------------------------
+
+    const ctx1 = document.getElementById("gaugeTemp");
+
+    const gaugeTemp = new Chart(ctx1, {
+        type: "doughnut",
+        data: {
+            labels: ["Temperatura"],
+            datasets: [{
+                data: [50, 50],
+                backgroundColor: ["#ff3b3b", "#222"],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            circumference: 180,
+            rotation: 270,
+            cutout: "75%",
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // -------------------------------
+    // GAUGE UMIDADE
+    // -------------------------------
+
+    const ctx2 = document.getElementById("gaugeUmid");
+
+    const gaugeUmid = new Chart(ctx2, {
+        type: "doughnut",
+        data: {
+            labels: ["Umidade"],
+            datasets: [{
+                data: [50, 50],
+                backgroundColor: ["#3498db", "#222"],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            circumference: 180,
+            rotation: 270,
+            cutout: "75%",
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // -------------------------------
+    // FUNÇÕES DO PAINEL
+    // -------------------------------
+
+    function toggleLED() {
+        alert("⚠ Aqui depois vamos conectar no ESP32 para ligar/desligar de verdade.");
+    }
+
+    function salvarAlerta() {
+        let valor = document.getElementById("tempAlerta").value;
+
+        if (valor === "") {
+            alert("Digite uma temperatura!");
+            return;
+        }
+
+        alert("Temperatura de alerta salva: " + valor + "°C\n(Depois envio isso para o ESP32 automático)");
+    }
+
+    // Simulação inicial
+    setInterval(() => {
+        document.getElementById("status").innerText = "Online";
+        document.getElementById("status").className = "status-online";
+    }, 1500);
+
+</script>
+
+</body>
+</html>
