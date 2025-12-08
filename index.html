@@ -1,93 +1,21 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NewEnergy • Login / Cadastro</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #000000, #1e1e1e);
-            font-family: Arial, sans-serif;
-            color: white;
-        }
-
-        .box {
-            width: 90%;
-            max-width: 360px;
-            background: #111;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 25px rgba(255, 255, 0, 0.3);
-            border: 1px solid #333;
-            text-align: center;
-        }
-
-        .box h2 {
-            margin-bottom: 20px;
-            color: #f1c40f;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 8px;
-            background: #222;
-            color: white;
-            font-size: 15px;
-            outline: none;
-        }
-
-        button {
-            width: 100%;
-            margin-top: 18px;
-            padding: 12px;
-            background: #f1c40f;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #ffe35a;
-        }
-
-        .msg {
-            color: #ff5757;
-            margin-top: 12px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .tabs {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 15px;
-        }
-
-        .tab {
-            cursor: pointer;
-            padding: 10px 20px;
-            border-radius: 8px;
-            background: #222;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        .tab.active {
-            background: #f1c40f;
-            color: #000;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NewEnergy • Login / Cadastro</title>
+<style>
+body {margin:0; padding:0; display:flex; align-items:center; justify-content:center; height:100vh; background:linear-gradient(135deg, #000, #1e1e1e); font-family:Arial,sans-serif; color:white;}
+.box {width:90%; max-width:360px; background:#111; padding:30px; border-radius:15px; box-shadow:0 0 25px rgba(255,255,0,0.3); border:1px solid #333; text-align:center;}
+.box h2 {margin-bottom:20px; color:#f1c40f;}
+input {width:100%; padding:12px; margin-top:10px; border:none; border-radius:8px; background:#222; color:white; font-size:15px; outline:none;}
+button {width:100%; margin-top:18px; padding:12px; background:#f1c40f; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;}
+button:hover {background:#ffe35a;}
+.msg {color:#ff5757; margin-top:12px; font-size:14px; display:none;}
+.tabs {display:flex; justify-content:space-around; margin-bottom:15px;}
+.tab {cursor:pointer; padding:10px 20px; border-radius:8px; background:#222; color:#fff; font-weight:bold;}
+.tab.active {background:#f1c40f; color:#000;}
+</style>
 </head>
 <body>
 
@@ -114,13 +42,13 @@
     </div>
 </div>
 
-<!-- Firebase compat (para navegador sem bundler) -->
+<!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <script>
-  // Configuração do Firebase
+  // Config Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
     authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -131,66 +59,52 @@
     appId: "1:1082980860084:web:b3b669b8f1801c3d6657e1"
   };
 
-  // Inicializa Firebase
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
-  const database = firebase.database();
+  const db = firebase.database();
 
   // Troca de abas
   function showTab(tab){
-      document.getElementById("loginBox").style.display = tab === 'login' ? 'block' : 'none';
-      document.getElementById("cadastroBox").style.display = tab === 'cadastro' ? 'block' : 'none';
+      document.getElementById("loginBox").style.display = tab==='login' ? 'block':'none';
+      document.getElementById("cadastroBox").style.display = tab==='cadastro' ? 'block':'none';
       document.getElementById("tabLogin").classList.toggle("active", tab==='login');
       document.getElementById("tabCadastro").classList.toggle("active", tab==='cadastro');
-      document.getElementById("msgLogin").style.display = "none";
-      document.getElementById("msgCadastro").style.display = "none";
+      document.getElementById("msgLogin").style.display="none";
+      document.getElementById("msgCadastro").style.display="none";
   }
 
   // Função login
   function login(){
       const email = document.getElementById("loginEmail").value;
       const senha = document.getElementById("loginSenha").value;
-      if(!email || !senha){
-          document.getElementById("msgLogin").innerText = "Preencha todos os campos!";
-          document.getElementById("msgLogin").style.display = "block";
-          return;
-      }
+      if(!email || !senha){showMsg("msgLogin","Preencha todos os campos!"); return;}
       auth.signInWithEmailAndPassword(email, senha)
-          .then(userCredential => {
-              console.log("Login OK:", userCredential.user.uid);
-              window.location.href = "painel.html";
-          })
-          .catch(error => {
-              console.error("Erro login:", error);
-              document.getElementById("msgLogin").innerText = error.message;
-              document.getElementById("msgLogin").style.display = "block";
-          });
+        .then(userCredential => {window.location.href="painel.html";})
+        .catch(error => showMsg("msgLogin",error.message));
   }
 
   // Função cadastro
   function cadastrar(){
       const email = document.getElementById("cadEmail").value;
       const senha = document.getElementById("cadSenha").value;
-      if(!email || !senha){
-          document.getElementById("msgCadastro").innerText = "Preencha todos os campos!";
-          document.getElementById("msgCadastro").style.display = "block";
-          return;
-      }
+      if(!email || !senha){showMsg("msgCadastro","Preencha todos os campos!"); return;}
+      if(senha.length<6){showMsg("msgCadastro","Senha deve ter pelo menos 6 caracteres!"); return;}
       auth.createUserWithEmailAndPassword(email, senha)
-          .then(userCredential => {
-              console.log("Usuário criado:", userCredential.user.uid);
-              document.getElementById("msgCadastro").innerText = "Cadastro realizado! Aguarde liberação após pagamento.";
-              document.getElementById("msgCadastro").style.color = "#4cff4c";
-              document.getElementById("msgCadastro").style.display = "block";
-          })
-          .catch(error => {
-              console.error("Erro cadastro:", error);
-              document.getElementById("msgCadastro").innerText = error.message;
-              document.getElementById("msgCadastro").style.color = "#ff5757";
-              document.getElementById("msgCadastro").style.display = "block";
-          });
+        .then(userCredential => {
+            const uid = userCredential.user.uid;
+            // Cria nó no DB para controlar plano do usuário
+            db.ref("usuarios/"+uid).set({ativo:false, criado:Date.now()});
+            showMsg("msgCadastro","Cadastro realizado! Aguarde ativação após pagamento.",true);
+        })
+        .catch(error => showMsg("msgCadastro",error.message,false));
+  }
+
+  function showMsg(id,msg,sucesso=false){
+      const el = document.getElementById(id);
+      el.innerText = msg;
+      el.style.color = sucesso ? "#4cff4c":"#ff5757";
+      el.style.display="block";
   }
 </script>
-
 </body>
 </html>
