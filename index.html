@@ -4,99 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NewEnergy • Login</title>
-
     <style>
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: center; justify-content: center;
             height: 100vh;
             background: linear-gradient(135deg, #000000, #1e1e1e);
             font-family: Arial, sans-serif;
             color: white;
         }
-
         .login-box {
-            width: 90%;
-            max-width: 360px;
-            background: #111;
-            padding: 30px;
+            width: 90%; max-width: 360px;
+            background: #111; padding: 30px;
             border-radius: 15px;
             box-shadow: 0 0 25px rgba(255, 255, 0, 0.3);
-            border: 1px solid #333;
-            text-align: center;
+            border: 1px solid #333; text-align: center;
         }
-
-        .login-box h2 {
-            margin-bottom: 20px;
-            color: #f1c40f;
-        }
-
+        .login-box h2 { margin-bottom: 20px; color: #f1c40f; }
         input {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 8px;
-            background: #222;
-            color: white;
-            font-size: 15px;
-            outline: none;
+            width: 100%; padding: 12px; margin-top: 10px;
+            border: none; border-radius: 8px;
+            background: #222; color: white; font-size: 15px; outline: none;
         }
-
         button {
-            width: 100%;
-            margin-top: 18px;
-            padding: 12px;
-            background: #f1c40f;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
+            width: 100%; margin-top: 18px;
+            padding: 12px; background: #f1c40f;
+            border: none; border-radius: 8px;
+            font-size: 16px; font-weight: bold; cursor: pointer;
         }
-
-        button:hover {
-            background: #ffe35a;
-        }
-
-        .msg-erro {
-            color: #ff5757;
-            margin-top: 12px;
-            font-size: 14px;
-            display: none;
-        }
+        button:hover { background: #ffe35a; }
+        .msg-erro { color: #ff5757; margin-top: 12px; font-size: 14px; display: none; }
     </style>
 </head>
-
 <body>
-
     <div class="login-box">
         <h2>NewEnergy Login</h2>
-
-        <input type="text" id="usuario" placeholder="Usuário">
+        <input type="email" id="email" placeholder="Email">
         <input type="password" id="senha" placeholder="Senha">
-
         <button onclick="login()">Entrar</button>
-
-        <div class="msg-erro" id="erro">Usuário ou senha incorretos.</div>
+        <button onclick="cadastrar()">Cadastrar</button>
+        <div class="msg-erro" id="erro">Erro: usuário ou senha incorretos.</div>
     </div>
 
-    <script>
-        function login() {
-            let user = document.getElementById("usuario").value;
-            let pass = document.getElementById("senha").value;
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
 
-            // Login padrão
-            if (user === "admin" && pass === "1234") {
-                window.location.href = "painel.html";
-            } else {
+    <script>
+        const firebaseConfig = { 
+            apiKey: "AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
+            authDomain: "controle-led-esp-oficial.firebaseapp.com",
+            databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
+            projectId: "controle-led-esp-oficial",
+            storageBucket: "controle-led-esp-oficial.firebasestorage.app",
+            messagingSenderId: "1082980860084",
+            appId: "1:1082980860084:web:b3b669b8f1801c3d6657e1"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        function cadastrar() {
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+
+            auth.createUserWithEmailAndPassword(email, senha)
+            .then((userCredential) => {
+                const uid = userCredential.user.uid;
+                database.ref('usuarios/' + uid).set({
+                    email: email,
+                    statusPagamento: false,
+                    dataCadastro: new Date().toISOString()
+                });
+                alert("Cadastro realizado! Aguarde liberação após pagamento.");
+            })
+            .catch((error) => {
+                document.getElementById("erro").innerText = error.message;
                 document.getElementById("erro").style.display = "block";
-            }
+            });
+        }
+
+        function login() {
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+
+            auth.signInWithEmailAndPassword(email, senha)
+            .then((userCredential) => {
+                const uid = userCredential.user.uid;
+                database.ref('usuarios/' + uid + '/statusPagamento').once('value')
+                .then(snapshot => {
+                    const ativo = snapshot.val();
+                    if (ativo) {
+                        window.location.href = "painel.html";
+                    } else {
+                        alert("Pagamento não identificado. Acesso bloqueado até regularizar.");
+                        auth.signOut();
+                    }
+                });
+            })
+            .catch((error) => {
+                document.getElementById("erro").innerText = error.message;
+                document.getElementById("erro").style.display = "block";
+            });
         }
     </script>
-
 </body>
 </html>
