@@ -4,145 +4,94 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NewEnergy • Painel</title>
-
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Firebase compat -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
 <style>
-body { margin:0; padding:0; font-family: Arial,sans-serif; background:#000; color:white; }
-header { background:#111; padding:10px; text-align:center; font-size:18px; color:#f1c40f; border-bottom:1px solid #222; }
-.container { padding:10px; max-width:400px; margin:auto; display:flex; flex-direction:column; gap:15px; }
-.card { background:#111; padding:12px; border-radius:10px; border:1px solid #333; box-shadow:0 0 6px rgba(255,255,0,0.1); }
-.card h3 { margin-bottom:10px; font-size:16px; color:#f1c40f; }
-.status-online { color:#4cff4c; font-weight:bold; font-size:14px; }
-.status-offline { color:#ff5757; font-weight:bold; font-size:14px; }
-canvas { width:130px !important; height:130px !important; display:block; margin:auto; }
-button { width:100%; padding:10px; background:#f1c40f; border:none; border-radius:8px; font-size:15px; font-weight:bold; cursor:pointer; color:#000; margin-top:5px; }
-button:hover { background:#ffe35a; }
-input { width:100%; padding:8px; margin-top:5px; border-radius:6px; border:none; background:#222; color:#fff; font-size:14px; }
+body{margin:0;padding:0;font-family:Arial,sans-serif;background:#000;color:white;}
+header{background:#111;padding:10px;text-align:center;font-size:18px;color:#f1c40f;border-bottom:1px solid #222;}
+.container{padding:10px;max-width:400px;margin:auto;display:flex;flex-direction:column;gap:15px;}
+.card{background:#111;padding:12px;border-radius:10px;border:1px solid #333;box-shadow:0 0 6px rgba(255,255,0,0.1);}
+.card h3{margin-bottom:10px;font-size:16px;color:#f1c40f;}
+.status-online{color:#4cff4c;font-weight:bold;font-size:14px;}
+.status-offline{color:#ff5757;font-weight:bold;font-size:14px;}
+canvas{width:130px!important;height:130px!important;display:block;margin:auto;}
+button{width:100%;padding:10px;background:#f1c40f;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;color:#000;margin-top:5px;}
+button:hover{background:#ffe35a;}
+input{width:100%;padding:8px;margin-top:5px;border-radius:6px;border:none;background:#222;color:#fff;font-size:14px;}
 </style>
 </head>
 <body>
-
 <header>Painel de Controle • NewEnergy</header>
 <div class="container">
 
-    <!-- STATUS -->
-    <div class="card">
-        <h3>Status do Dispositivo</h3>
-        <p id="status" class="status-offline">Offline</p>
-    </div>
-
-    <!-- GAUGES -->
-    <div class="card">
-        <h3>Sensores</h3>
-        <canvas id="gaugeTemp"></canvas><br>
-        <canvas id="gaugeUmid"></canvas>
-    </div>
-
-    <!-- CONTROLE LED -->
-    <div class="card">
-        <h3>Controle do LED</h3>
-        <button id="btnLED">Ligar / Desligar LED</button>
-    </div>
-
-    <!-- ALERTA TEMPERATURA -->
-    <div class="card">
-        <h3>Ajustar Alerta de Temperatura</h3>
-        <input type="number" id="tempAlerta" placeholder="Ex: 30">
-        <button id="btnAlerta">Salvar Temperatura de Alerta</button>
-    </div>
+<div class="card"><h3>Status do Dispositivo</h3><p id="status" class="status-offline">Offline</p></div>
+<div class="card"><h3>Sensores</h3><canvas id="gaugeTemp"></canvas><br><canvas id="gaugeUmid"></canvas></div>
+<div class="card"><h3>Controle do LED</h3><button id="btnLED">Ligar / Desligar LED</button></div>
+<div class="card"><h3>Ajustar Alerta de Temperatura</h3><input type="number" id="tempAlerta" placeholder="Ex: 30"><button id="btnAlerta">Salvar Temperatura de Alerta</button></div>
 
 </div>
 
 <script>
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
-    authDomain: "controle-led-esp-oficial.firebaseapp.com",
-    databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
-    projectId: "controle-led-esp-oficial",
-    storageBucket: "controle-led-esp-oficial.firebasestorage.app",
-    messagingSenderId: "1082980860084",
-    appId: "1:1082980860084:web:b3b669b8f1801c3d6657e1"
-  };
+const firebaseConfig = {
+  apiKey:"AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
+  authDomain:"controle-led-esp-oficial.firebaseapp.com",
+  databaseURL:"https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
+  projectId:"controle-led-esp-oficial",
+  storageBucket:"controle-led-esp-oficial.firebasestorage.app",
+  messagingSenderId:"1082980860084",
+  appId:"1:1082980860084:web:b3b669b8f1801c3d6657e1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-  // Inicializa Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+const ctxTemp = document.getElementById("gaugeTemp");
+const gaugeTemp = new Chart(ctxTemp,{type:"doughnut",data:{labels:["Temp"],datasets:[{data:[0,100],backgroundColor:["#ff3b3b","#222"],borderWidth:0}]},options:{circumference:180,rotation:270,cutout:"80%",plugins:{legend:{display:false}}}});
+const ctxUmid = document.getElementById("gaugeUmid");
+const gaugeUmid = new Chart(ctxUmid,{type:"doughnut",data:{labels:["Umid"],datasets:[{data:[0,100],backgroundColor:["#3498db","#222"],borderWidth:0}]},options:{circumference:180,rotation:270,cutout:"80%",plugins:{legend:{display:false}}}});
 
-  // Gauges Chart.js
-  const ctxTemp = document.getElementById("gaugeTemp");
-  const gaugeTemp = new Chart(ctxTemp, {
-      type: "doughnut",
-      data: { labels:["Temp"], datasets:[{data:[0,100], backgroundColor:["#ff3b3b","#222"], borderWidth:0}]},
-      options: { circumference:180, rotation:270, cutout:"80%", plugins:{legend:{display:false}} }
-  });
+const statusEl = document.getElementById("status");
+const btnLED = document.getElementById("btnLED");
+const tempAlertaEl = document.getElementById("tempAlerta");
+const btnAlerta = document.getElementById("btnAlerta");
 
-  const ctxUmid = document.getElementById("gaugeUmid");
-  const gaugeUmid = new Chart(ctxUmid, {
-      type: "doughnut",
-      data: { labels:["Umid"], datasets:[{data:[0,100], backgroundColor:["#3498db","#222"], borderWidth:0}]},
-      options: { circumference:180, rotation:270, cutout:"80%", plugins:{legend:{display:false}} }
-  });
+let ledState = false;
 
-  const statusEl = document.getElementById("status");
-  const btnLED = document.getElementById("btnLED");
-  const tempAlertaEl = document.getElementById("tempAlerta");
-  const btnAlerta = document.getElementById("btnAlerta");
+// Atualiza gauges em tempo real
+db.ref("/sensores").on("value", snapshot=>{
+  const data = snapshot.val();
+  if(data){
+      gaugeTemp.data.datasets[0].data[0] = data.temperatura;
+      gaugeTemp.data.datasets[0].data[1] = 100 - data.temperatura;
+      gaugeTemp.update();
 
-  let ledState = false;
+      gaugeUmid.data.datasets[0].data[0] = data.umidade;
+      gaugeUmid.data.datasets[0].data[1] = 100 - data.umidade;
+      gaugeUmid.update();
 
-  // Atualiza valores do Firebase
-  function atualizarDados(snapshot){
-      const data = snapshot.val();
-      if(data){
-          // Temperatura
-          gaugeTemp.data.datasets[0].data[0] = data.temperatura;
-          gaugeTemp.data.datasets[0].data[1] = 100 - data.temperatura;
-          gaugeTemp.update();
+      statusEl.innerText="Online"; statusEl.className="status-online";
 
-          // Umidade
-          gaugeUmid.data.datasets[0].data[0] = data.umidade;
-          gaugeUmid.data.datasets[0].data[1] = 100 - data.umidade;
-          gaugeUmid.update();
-
-          // Status
-          statusEl.innerText = "Online";
-          statusEl.className = "status-online";
-
-          // LED
-          ledState = data.led;
-          btnLED.innerText = ledState ? "Desligar LED" : "Ligar LED";
-      } else {
-          statusEl.innerText = "Offline";
-          statusEl.className = "status-offline";
-      }
+      ledState = data.led; btnLED.innerText = ledState ? "Desligar LED":"Ligar LED";
+  } else {
+      statusEl.innerText="Offline"; statusEl.className="status-offline";
   }
+});
 
-  // Escuta dados em tempo real
-  db.ref("/sensores").on("value", atualizarDados);
+// Controle LED
+btnLED.addEventListener("click", ()=>{
+    ledState = !ledState;
+    db.ref("/sensores/led").set(ledState);
+});
 
-  // Controle LED
-  btnLED.addEventListener("click", ()=>{
-      ledState = !ledState;
-      db.ref("/sensores/led").set(ledState);
-  });
-
-  // Ajuste de alerta de temperatura
-  btnAlerta.addEventListener("click", ()=>{
-      const temp = parseFloat(tempAlertaEl.value);
-      if(isNaN(temp)){
-          alert("Digite um valor válido!");
-          return;
-      }
-      db.ref("/sensores/alertaTemp").set(temp);
-      alert("Temperatura de alerta salva: " + temp + "°C");
-  });
+// Ajuste alerta temperatura
+btnAlerta.addEventListener("click", ()=>{
+    const temp = parseFloat(tempAlertaEl.value);
+    if(isNaN(temp)){alert("Digite um valor válido!"); return;}
+    db.ref("/sensores/alertaTemp").set(temp);
+    alert("Temperatura de alerta salva: "+temp+"°C");
+});
 </script>
-
 </body>
 </html>
