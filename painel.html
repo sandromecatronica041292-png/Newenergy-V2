@@ -9,124 +9,149 @@
   :root { 
     --brand-primary: #1a365d; --brand-accent: #007aff; --bg-body: #f1f5f9; --card-bg: #ffffff;
     --text-main: #1e293b; --text-muted: #64748b; --on: #10b981; --off: #e11d48;
-    --shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+    --shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05);
   }
   
   body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
   
-  .card { background: var(--card-bg); border-radius: 20px; padding: 30px; width: 100%; max-width: 440px; box-shadow: var(--shadow); position: relative; overflow: hidden; text-align: center; }
+  .card { background: var(--card-bg); border-radius: 20px; padding: 35px; width: 100%; max-width: 440px; box-shadow: var(--shadow); position: relative; overflow: hidden; text-align: center; }
 
-  /* TABS NO PAINEL INVISÍVEL */
-  .admin-tabs { display: flex; gap: 5px; margin-bottom: 20px; background: #f1f5f9; padding: 5px; border-radius: 10px; }
-  .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 8px; font-size: 10px; font-weight: 700; cursor: pointer; background: transparent; color: var(--text-muted); }
+  /* CABEÇALHO ORIGINAL */
+  .header-main { position: relative; margin-bottom: 25px; }
+  .logo-principal { font-size: 18px; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: var(--brand-primary); cursor: pointer; }
+  .btn-logout { position: absolute; top: -15px; right: -15px; background: #fff1f2; border: 1px solid #ffe4e6; color: var(--off); padding: 6px 12px; border-radius: 8px; font-size: 10px; cursor: pointer; font-weight: 700; }
+
+  /* STATUS E INFO */
+  .status-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 50px; font-size: 11px; font-weight: 700; background: #ecfdf5; color: var(--on); border: 1px solid rgba(0,0,0,0.05); margin-bottom: 15px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--on); box-shadow: 0 0 8px var(--on); }
+  .info-client-box { text-align: left; padding: 12px; border-left: 3px solid var(--brand-accent); background: #f8fafc; border-radius: 0 10px 10px 0; font-size: 12px; margin-bottom: 25px; }
+
+  /* GAUGES ORIGINAIS */
+  .gauges-container { display: flex; gap: 15px; margin-bottom: 25px; }
+  .gauge-box { flex: 1; background: #f8fafc; padding: 20px 10px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; border: 1px solid #f1f5f9; }
+  .gauge-box canvas { width: 140px !important; height: 85px !important; }
+  .g-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+  .g-value { font-size: 22px; font-weight: 800; color: var(--brand-primary); }
+
+  /* BOTÕES PADRÃO */
+  .btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+  .btn-led.on { background: var(--brand-primary); color: #fff; }
+  .btn-led.off { background: #e2e8f0; color: var(--text-muted); }
+  .btn-history { background: #fff; color: var(--brand-accent); border: 1.5px solid var(--brand-accent); }
+
+  /* PAINÉIS OCULTOS */
+  #adminPanel, #acPanel { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border-radius: 20px; padding: 25px; box-sizing: border-box; z-index: 100; flex-direction: column; overflow-y: auto; }
+  
+  /* ABAS DO PAINEL DE SERVIÇO */
+  .admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 10px; }
+  .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 7px; font-size: 9px; font-weight: 800; cursor: pointer; background: transparent; color: var(--text-muted); }
   .tab-btn.active { background: #fff; color: var(--brand-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
   .tab-content { display: none; }
   .tab-content.active { display: block; }
 
-  /* DISPLAY DE CLIMATIZAÇÃO */
-  .ac-display-box { background: #0f172a; color: #fff; padding: 25px; border-radius: 15px; margin: 15px 0; display: flex; justify-content: space-around; align-items: center; border: 1px solid #334155; }
-  .ac-temp-unit span { display: block; font-size: 9px; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
-  .ac-temp-unit div { font-size: 32px; font-weight: 800; font-family: 'Courier New', monospace; }
-  .ac-temp-unit.target div { color: #22c55e; }
-
-  .ir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .btn-action { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-  
-  #adminPanel, #acPanel { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border-radius: 20px; padding: 25px; box-sizing: border-box; z-index: 100; flex-direction: column; overflow-y: auto; text-align: left; }
   .admin-input { background: #f8fafc; border: 1.5px solid #e2e8f0; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; margin-bottom: 12px; outline: none; }
   label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; display: block; }
-  
-  .badge-status { padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; margin-bottom: 10px; display: inline-block; }
-  .status-auto { background: #dcfce7; color: #166534; }
-  .status-man { background: #f1f5f9; color: #475569; }
 
-  .sched-box { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 10px; }
-  .btn-learn { background: #fff; border: 1.5px dashed var(--brand-accent); color: var(--brand-accent); padding: 12px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer; }
-  .btn-learn:hover { background: var(--brand-accent); color: #fff; }
+  /* AC DISPLAY DESIGN FORTE */
+  .ac-display { background: #0f172a; color: #fff; padding: 20px; border-radius: 15px; margin: 15px 0; display: flex; justify-content: space-around; border: 1px solid #1e293b; }
+  .ac-unit span { display: block; font-size: 9px; color: #64748b; margin-bottom: 5px; }
+  .ac-unit div { font-size: 28px; font-weight: 800; font-family: monospace; }
+  .ir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-learn { background: #fff; border: 1px dashed var(--brand-accent); color: var(--brand-accent); padding: 10px; border-radius: 8px; font-size: 9px; font-weight: 800; cursor: pointer; }
+
+  #alertMessage { min-height: 20px; font-size: 12px; margin-bottom: 10px; color: var(--off); font-weight: 700; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 
 <body>
 <div class="card">
   
   <div id="adminPanel">
+    <div class="logo-principal" style="font-size: 12px; margin-bottom: 15px;">Engenharia de Serviço</div>
     <div class="admin-tabs">
-        <button class="tab-btn active" onclick="switchTab('tabGeral', this)">SISTEMA</button>
-        <button class="tab-btn" onclick="switchTab('tabIR', this)">MEMORIZAR IR</button>
+        <button class="tab-btn active" onclick="switchTab('tabSist', this)">SISTEMA</button>
+        <button class="tab-btn" onclick="switchTab('tabManut', this)">MANUTENÇÃO</button>
+        <button class="tab-btn" onclick="switchTab('tabIR', this)">CAPTURAR IR</button>
     </div>
 
-    <div id="tabGeral" class="tab-content active">
-        <label>Cliente / Unidade</label>
+    <div id="tabSist" class="tab-content active">
+        <label>Nome do Cliente</label>
         <input type="text" id="cfgCliente" class="admin-input">
         <label>Localização</label>
         <input type="text" id="cfgLocal" class="admin-input">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <div><label>Temp. Crítica</label><input type="number" id="tMax" class="admin-input"></div>
-            <div><label>Humid. Crítica</label><input type="number" id="hMax" class="admin-input"></div>
+            <div><label>Temp Máx</label><input type="number" id="tMax" class="admin-input"></div>
+            <div><label>Hum Máx</label><input type="number" id="hMax" class="admin-input"></div>
         </div>
-        <label>E-mail de Emergência</label>
+        <label>E-mail de Alerta</label>
         <input type="email" id="cfgEmail" class="admin-input">
     </div>
 
-    <div id="tabIR" class="tab-content">
-        <label>Mapeamento de Sinais do Controle</label>
-        <p style="font-size: 9px; color: var(--text-muted); margin-bottom: 10px;">Cada botão abaixo coloca o ESP32 em modo de escuta para gravar a frequência exata.</p>
-        <div class="ir-grid">
-            <button class="btn-learn" onclick="startLearn('on')">GRAVAR LIGAR</button>
-            <button class="btn-learn" onclick="startLearn('off')">GRAVAR DESLIGAR</button>
-            <button class="btn-learn" onclick="startLearn('cool22')">GRAVAR FRIO 22°C</button>
-            <button class="btn-learn" onclick="startLearn('auto_mode')">GRAVAR AUTO</button>
+    <div id="tabManut" class="tab-content">
+        <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; font-weight:800;">Alertas Enviados: <span id="countEmail" style="color:var(--brand-accent)">0</span></span>
+                <button onclick="zerarContador()" style="background:var(--off); color:white; border:none; padding:5px 10px; border-radius:6px; font-size:9px; cursor:pointer;">ZERAR</button>
+            </div>
         </div>
-        <div style="margin-top:20px; border-top:1px solid #eee; padding-top:10px;">
-            <button onclick="db.ref('/historico').remove()" style="width:100%; background:none; border:none; color:var(--off); font-size:9px; cursor:pointer;">LIMPAR HISTÓRICO DE DADOS</button>
-        </div>
+        <label>Intervalo E-mail (min)</label>
+        <input type="number" id="cfgTempoEmail" class="admin-input" placeholder="Ex: 10">
+        <button onclick="limpezaInteligente()" style="width:100%; background:none; border:1.5px solid var(--off); color:var(--off); padding:12px; border-radius:10px; font-size:10px; font-weight:800; cursor:pointer;">LIMPAR DADOS (+2 ANOS)</button>
+        <button onclick="testarEmail()" style="width:100%; margin-top:10px; background:#f1f5f9; color:var(--brand-primary); border:none; padding:10px; border-radius:10px; font-size:10px; font-weight:800; cursor:pointer;">ENVIAR E-MAIL TESTE</button>
     </div>
 
-    <div style="margin-top:20px; display:flex; gap:10px;">
-        <button class="btn-action" style="background:var(--brand-primary); color:#fff; flex:2;" onclick="salvarConfig()">SALVAR ALTERAÇÕES</button>
-        <button class="btn-action" style="background:none; border:1px solid #e2e8f0; flex:1;" onclick="fecharAdmin()">SAIR</button>
+    <div id="tabIR" class="tab-content">
+        <label>Laboratório de Frequências</label>
+        <div class="ir-grid">
+            <button class="btn-learn" onclick="startLearn('on')">GRAVAR ON</button>
+            <button class="btn-learn" onclick="startLearn('off')">GRAVAR OFF</button>
+            <button class="btn-learn" onclick="startLearn('cool')">GRAVAR COOL</button>
+            <button class="btn-learn" onclick="startLearn('auto')">GRAVAR AUTO</button>
+        </div>
+        <p style="font-size:9px; color:var(--text-muted); margin-top:10px;">* O ESP32 entrará em modo de escuta por 10 segundos ao clicar.</p>
+    </div>
+
+    <div style="margin-top: 20px; display: flex; gap: 10px;">
+        <button class="btn-action" style="background:var(--brand-primary); color:#fff; flex: 2;" onclick="salvarConfig()">SALVAR TUDO</button>
+        <button class="btn-action" style="background:none; border:1px solid #e2e8f0; flex: 1; font-size:11px;" onclick="fecharAdmin()">SAIR</button>
     </div>
   </div>
 
   <div id="acPanel">
-    <div class="logo-principal" style="font-size:14px; margin-bottom:5px;">Painel de Climatização</div>
-    <div id="acModeBadge" class="badge-status status-man">MODO MANUAL</div>
+    <div class="logo-principal" style="font-size: 14px; margin-bottom: 5px;">Controle Digital</div>
+    <div id="badgeAC" style="font-size:10px; font-weight:800; padding:4px 12px; border-radius:20px; background:#f1f5f9; display:inline-block; margin-bottom:10px;">MODO MANUAL</div>
 
-    <div class="ac-display-box">
-        <div class="ac-temp-unit">
-            <span>Ambiente</span>
-            <div id="acRealTemp">--°C</div>
-        </div>
-        <div class="ac-temp-unit target">
-            <span>Setpoint</span>
-            <div id="acTargetTemp">22°C</div>
-        </div>
+    <div class="ac-display">
+        <div class="ac-unit"><span>Real</span><div id="acReal">--°</div></div>
+        <div style="width:1px; background:#334155; height:40px;"></div>
+        <div class="ac-unit" style="color:var(--on);"><span>Alvo</span><div id="acAlvo">22°</div></div>
     </div>
 
-    <div class="sched-box">
-        <label style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <span style="font-size:11px; font-weight:800;">AGENDAMENTO (AUTO)</span>
-            <input type="checkbox" id="enableSched" onchange="syncSched()">
-        </label>
+    <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <label style="margin:0">Agendamento</label>
+            <input type="checkbox" id="schedEnable" onchange="syncSched()">
+        </div>
         <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label>Ligar</label><input type="time" id="timeOn" class="admin-input" onchange="syncSched()"></div>
-            <div style="flex:1;"><label>Desligar</label><input type="time" id="timeOff" class="admin-input" onchange="syncSched()"></div>
+            <input type="time" id="sOn" class="admin-input" style="margin:0; font-size:11px;" onchange="syncSched()">
+            <input type="time" id="sOff" class="admin-input" style="margin:0; font-size:11px;" onchange="syncSched()">
         </div>
     </div>
 
-    <div class="ir-grid" style="margin-top:15px;">
+    <div class="ir-grid">
         <button class="btn-action" style="background:var(--brand-primary); color:#fff;" onclick="sendIR('on')">Ligar</button>
         <button class="btn-action" style="background:var(--off); color:#fff;" onclick="sendIR('off')">Desligar</button>
-        <button class="btn-action" style="background:var(--brand-accent); color:#fff;" onclick="adjustSetpoint(1)">Temp +</button>
-        <button class="btn-action" style="background:var(--brand-accent); color:#fff;" onclick="adjustSetpoint(-1)">Temp -</button>
-        <button id="btnAutoMode" class="btn-action" style="background:#f1f5f9; color:var(--brand-primary); grid-column: span 2;" onclick="toggleAuto()">ATIVAR AUTOMAÇÃO POR TEMP.</button>
+        <button class="btn-action btn-history" onclick="ajustarSetpoint(1)">+ Temp</button>
+        <button class="btn-action btn-history" onclick="ajustarSetpoint(-1)">- Temp</button>
+        <button id="btnAuto" class="btn-action" style="grid-column: span 2; background:var(--brand-accent); color:#fff;" onclick="toggleAuto()">ATIVAR AUTOMÁTICO</button>
     </div>
-    <button class="btn-action" style="margin-top:10px; background:none; font-size:11px; color:var(--text-muted);" onclick="fecharAC()">VOLTAR AO DASHBOARD</button>
+    <button class="btn-action" style="background:none; color:var(--text-muted); font-size:11px;" onclick="fecharAC()">VOLTAR</button>
   </div>
 
   <div class="header-main">
@@ -134,12 +159,11 @@
     <button class="btn-logout" onclick="fazerLogout()">Sair</button>
   </div>
   
-  <div class="status-container" style="margin-bottom:20px;">
-    <div id="status" class="status-badge st-online"><div class="dot"></div> <span>SISTEMA ATIVO</span></div>
-    <div class="info-client-box">
-        <div>CLIENTE: <strong id="dispCliente">--</strong></div>
-        <div>LOCAL: <strong id="dispLocal">--</strong></div>
-    </div>
+  <div id="status" class="status-badge"><div class="dot"></div> <span>CONECTADO</span></div>
+
+  <div class="info-client-box">
+    <div>CLIENTE: <strong id="dispCliente">--</strong></div>
+    <div>LOCAL: <strong id="dispLocal">--</strong></div>
   </div>
 
   <div class="gauges-container">
@@ -148,12 +172,14 @@
   </div>
 
   <div id="alertMessage"></div>
-  <button id="btnLED" class="btn-action btn-led off">Luz Interna</button>
-  <button class="btn-action" style="background:var(--brand-accent); color:#fff; box-shadow: 0 4px 15px rgba(0,122,255,0.3);" onclick="abrirAC()">Controle Climatização</button>
+
+  <button id="btnLED" class="btn-action btn-led off">Ligar Iluminação</button>
+  <button class="btn-action" style="background:var(--brand-accent); color:#fff; box-shadow: 0 4px 15px rgba(0,122,255,0.2);" onclick="abrirAC()">Controle Climatização</button>
+  <button class="btn-action btn-history" onclick="window.location.href='historico.html'">Relatórios de Performance</button>
 </div>
 
 <script>
-// CONFIGURAÇÃO FIREBASE (MANTIDA)
+// Inicialização Firebase (Mantida do original)
 firebase.initializeApp({
   apiKey: "AIzaSyB5FnkQiFi3gn9Iup2KNcbrKxWd-0Jjo6Y",
   authDomain: "oficial-688e8.firebaseapp.com",
@@ -162,11 +188,10 @@ firebase.initializeApp({
 });
 const db = firebase.database();
 const auth = firebase.auth();
-
-let config = { tMax: 30, hMax: 80, acAuto: false, setpoint: 22, sched: false, timeOn: "08:00", timeOff: "18:00" };
+let config = { tMax: 30, hMax: 80, setpoint: 22, acAuto: false };
 let gT, gH;
 
-// NAVEGAÇÃO
+// Navegação e Tabs
 function switchTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -176,106 +201,74 @@ function switchTab(id, btn) {
 function abrirAC() { document.getElementById("acPanel").style.display = "flex"; }
 function fecharAC() { document.getElementById("acPanel").style.display = "none"; }
 
-// LÓGICA DE SENSORES E GAUGES
-function rodarDashboard() {
-  const gOpt = (col) => ({ angle: 0.15, lineWidth: 0.2, radiusScale: 0.9, pointer: { length: 0.5, strokeWidth: 0.03, color: '#1a365d' }, colorStart: col, colorStop: col, strokeColor: '#e2e8f0', highDpiSupport: true, generateGradient: true });
-  gT = new Gauge(document.getElementById("gTemp")).setOptions(gOpt('#e11d48'));
+// Dashboard Original
+function initGauges() {
+  const opt = (col) => ({ angle: 0.15, lineWidth: 0.2, radiusScale: 0.9, pointer: { length: 0.5, strokeWidth: 0.03, color: '#1a365d' }, colorStart: col, colorStop: col, strokeColor: '#e2e8f0', generateGradient: true, highDpiSupport: true });
+  gT = new Gauge(document.getElementById("gTemp")).setOptions(opt('#e11d48'));
   gT.maxValue = 50; gT.setMinValue(0); gT.set(0);
-  gH = new Gauge(document.getElementById("gHum")).setOptions(gOpt('#007aff'));
+  gH = new Gauge(document.getElementById("gHum")).setOptions(opt('#007aff'));
   gH.maxValue = 100; gH.setMinValue(0); gH.set(0);
-
-  db.ref("/temp").on("value", s => { 
-    const v = parseFloat(s.val()); 
-    gT.set(v); 
-    document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
-    document.getElementById("acRealTemp").innerText = v.toFixed(1) + "°C";
-    processarAutomacao(v);
-  });
-  db.ref("/hum").on("value", s => { gH.set(parseFloat(s.val())); document.getElementById("humVal").innerText = s.val() + "%"; });
 }
 
-// AUTOMAÇÃO INTELIGENTE
-function processarAutomacao(tempAtual) {
-    const agora = new Date();
-    const horaAtual = agora.getHours().toString().padStart(2, '0') + ":" + agora.getMinutes().toString().padStart(2, '0');
-
-    // 1. Regra de Horário (Agenda)
-    if(config.sched) {
-        if(horaAtual === config.timeOn) sendIR('on');
-        if(horaAtual === config.timeOff) sendIR('off');
-    }
-
-    // 2. Regra de Setpoint (Temperatura)
-    if(config.acAuto) {
-        if(tempAtual > config.setpoint) {
-            sendIR('cool22'); // Usa o sinal memorizado para resfriar
-        }
-    }
-}
-
-// COMANDOS IR
-function sendIR(cmd) {
-    db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() });
-}
-
-function startLearn(funcao) {
-    db.ref("/ir_system/learn").set({ active: true, function: funcao, ts: Date.now() });
-    alert("MODO MEMORIZAR: Aponte o controle para o sensor e pressione o botão correspondente a: " + funcao.toUpperCase());
-}
-
-function adjustSetpoint(val) {
-    const novo = config.setpoint + val;
-    db.ref("/config_alertas/setpoint").set(novo);
-}
-
-function toggleAuto() {
-    db.ref("/config_alertas/acAuto").set(!config.acAuto);
-}
-
-function syncSched() {
-    const up = {
-        sched: document.getElementById("enableSched").checked,
-        timeOn: document.getElementById("timeOn").value,
-        timeOff: document.getElementById("timeOff").value
-    };
-    db.ref("/config_alertas").update(up);
-}
-
-// SINCRONIZAÇÃO E LOGIN
-auth.onAuthStateChanged(user => { 
+// Lógica de Automação e Sincronização
+auth.onAuthStateChanged(user => {
   if (user) {
-    db.ref("/config_alertas").on("value", s => { 
-        if(s.val()) { 
+    initGauges();
+    db.ref("/config_alertas").on("value", s => {
+        if(s.val()) {
             config = {...config, ...s.val()};
-            document.getElementById("dispCliente").innerText = config.cliente || "Definir...";
-            document.getElementById("dispLocal").innerText = config.local || "Definir...";
-            document.getElementById("acTargetTemp").innerText = config.setpoint + "°C";
-            document.getElementById("acModeBadge").innerText = config.acAuto ? "AUTOMAÇÃO ATIVA" : "MODO MANUAL";
-            document.getElementById("acModeBadge").className = "badge-status " + (config.acAuto ? "status-auto" : "status-man");
-            document.getElementById("btnAutoMode").innerText = config.acAuto ? "DESATIVAR AUTOMAÇÃO" : "ATIVAR AUTOMAÇÃO POR TEMP.";
-            
-            document.getElementById("enableSched").checked = config.sched;
-            document.getElementById("timeOn").value = config.timeOn;
-            document.getElementById("timeOff").value = config.timeOff;
-        } 
+            document.getElementById("dispCliente").innerText = config.cliente || "--";
+            document.getElementById("dispLocal").innerText = config.local || "--";
+            document.getElementById("countEmail").innerText = config.contadorAlertas || 0;
+            document.getElementById("acAlvo").innerText = config.setpoint + "°";
+            document.getElementById("btnAuto").innerText = config.acAuto ? "DESATIVAR AUTO" : "ATIVAR AUTOMÁTICO";
+            document.getElementById("badgeAC").innerText = config.acAuto ? "MODO AUTOMÁTICO" : "MODO MANUAL";
+            document.getElementById("badgeAC").style.background = config.acAuto ? "#dcfce7" : "#f1f5f9";
+            document.getElementById("schedEnable").checked = config.sched || false;
+            document.getElementById("sOn").value = config.timeOn || "08:00";
+            document.getElementById("sOff").value = config.timeOff || "18:00";
+        }
     });
-    rodarDashboard();
+
+    db.ref("/temp").on("value", s => {
+        const v = parseFloat(s.val()); gT.set(v);
+        document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
+        document.getElementById("acReal").innerText = v.toFixed(0) + "°";
+        if(config.acAuto && v > config.setpoint) sendIR('cool');
+    });
+    db.ref("/hum").on("value", s => { gH.set(parseFloat(s.val())); document.getElementById("humVal").innerText = s.val() + "%"; });
+    db.ref("/led").on("value", s => {
+        const b = document.getElementById("btnLED");
+        b.innerText = s.val() == 1 ? "Luz Ligada" : "Ligar Iluminação";
+        b.className = "btn-action btn-led " + (s.val() == 1 ? "on" : "off");
+    });
   } else { window.location.replace("index.html"); }
 });
 
+// Funções de Manutenção e IR
 function salvarConfig() {
     db.ref("/config_alertas").update({
         cliente: document.getElementById("cfgCliente").value,
         local: document.getElementById("cfgLocal").value,
         tMax: parseFloat(document.getElementById("tMax").value),
         hMax: parseFloat(document.getElementById("hMax").value),
-        emailDestino: document.getElementById("cfgEmail").value
+        emailDestino: document.getElementById("cfgEmail").value,
+        tempoEmail: (parseFloat(document.getElementById("cfgTempoEmail").value) || 10) * 60000
     }).then(() => fecharAdmin());
 }
 
-function fecharAdmin() { document.getElementById("adminPanel").style.display = "none"; }
+function sendIR(cmd) { db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); }
+function startLearn(f) { db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() }); alert("Modo Escuta Ativado para: " + f); }
+function ajustarSetpoint(v) { db.ref("/config_alertas/setpoint").set(config.setpoint + v); }
+function toggleAuto() { db.ref("/config_alertas/acAuto").set(!config.acAuto); }
+function syncSched() { db.ref("/config_alertas").update({ sched: document.getElementById("schedEnable").checked, timeOn: document.getElementById("sOn").value, timeOff: document.getElementById("sOff").value }); }
+function zerarContador() { db.ref("/config_alertas/contadorAlertas").set(0); }
 function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
-document.getElementById("logoAdmin").onclick = () => { document.getElementById("adminPanel").style.display = "flex"; };
+
+// Ativação Painel Invisível (5 Cliques)
+let cliques = 0;
+document.getElementById("logoAdmin").onclick = () => { if(++cliques >= 5) { document.getElementById("adminPanel").style.display = "flex"; cliques = 0; } };
+document.getElementById("btnLED").onclick = () => { db.ref("/led").set(document.getElementById("btnLED").classList.contains('off') ? 1 : 0); };
 </script>
 </body>
 </html>
