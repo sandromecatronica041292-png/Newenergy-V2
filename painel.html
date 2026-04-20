@@ -31,7 +31,7 @@
     background: var(--card-bg); border-radius: 20px; padding: 35px; width: 100%; 
     max-width: 440px; box-shadow: var(--shadow); 
     border: 1px solid rgba(0,0,0,0.03); text-align: center; 
-    position: relative;
+    position: relative; overflow: hidden;
   }
 
   .header-main { position: relative; margin-bottom: 25px; }
@@ -66,7 +66,6 @@
   .st-online { color: var(--on); background: #ecfdf5; }
   .st-offline { color: var(--off); background: #fff1f2; }
 
-  /* Estilo dos novos campos de identificação */
   .info-client-box {
     margin-top: 15px; text-align: left; padding-left: 15px;
     border-left: 3px solid var(--brand-accent); font-size: 12px;
@@ -93,18 +92,39 @@
   .btn-history { background: #fff; color: var(--brand-accent); border: 1.5px solid var(--brand-accent); }
   .btn-history:hover { background: var(--brand-accent); color: #fff; }
 
-  #adminPanel { 
+  /* PAINÉIS OCULTOS */
+  #adminPanel, #acPanel { 
     display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
     background: #ffffff; border-radius: 20px; padding: 30px; box-sizing: border-box; 
     z-index: 100; flex-direction: column; overflow-y: auto; text-align: left;
   }
+
   .admin-input { 
     background: #f8fafc; border: 1.5px solid #e2e8f0; color: var(--text-main); 
     padding: 12px; border-radius: 8px; width: 100%; box-sizing: border-box; 
     font-size: 14px; margin-bottom: 15px; outline: none;
   }
-  .admin-input:focus { border-color: var(--brand-accent); background: #fff; }
   label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 5px; display: block; }
+
+  /* ESTILO ESPECÍFICO AR CONDICIONADO */
+  .ac-display {
+    background: #1e293b; color: #00ff88; padding: 20px; border-radius: 15px;
+    margin: 15px 0; font-family: 'Courier New', monospace; text-align: center;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+  }
+  .mode-badge {
+    font-size: 10px; padding: 4px 10px; border-radius: 4px; font-weight: 800;
+    margin-bottom: 10px; display: inline-block; text-align: center;
+  }
+  .mode-auto { background: #dcfce7; color: #166534; }
+  .mode-manual { background: #fee2e2; color: #991b1b; }
+  .ir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .btn-learn {
+    background: #f1f5f9; border: 1px dashed var(--brand-accent);
+    color: var(--brand-accent); padding: 8px; border-radius: 8px;
+    font-size: 10px; cursor: pointer; transition: 0.3s; font-weight: 700;
+  }
+  .btn-learn:active { background: var(--brand-accent); color: #fff; }
 
   #alertMessage { min-height: 20px; font-size: 12px; margin-bottom: 15px; color: var(--off); font-weight: 600; }
 </style>
@@ -118,14 +138,17 @@
 
 <body>
 <div class="card">
+  
   <div id="adminPanel">
     <div class="logo-principal" style="font-size: 14px; margin-bottom: 20px; color: var(--brand-accent);">Configurações de Engenharia</div>
     
-    <label>Nome do Cliente</label>
-    <input type="text" id="cfgCliente" class="admin-input" placeholder="Digite o nome do cliente">
-    <label>Local da Instalação</label>
-    <input type="text" id="cfgLocal" class="admin-input" placeholder="Ex: CPD Principal / Galpão A">
+    <label>Identificação</label>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <input type="text" id="cfgCliente" class="admin-input" placeholder="Cliente">
+        <input type="text" id="cfgLocal" class="admin-input" placeholder="Local">
+    </div>
 
+    <label>Limites Operacionais</label>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
       <div><label>Temp Mín</label><input type="number" id="tMin" class="admin-input"></div>
       <div><label>Temp Máx</label><input type="number" id="tMax" class="admin-input"></div>
@@ -133,40 +156,41 @@
       <div><label>Hum Máx</label><input type="number" id="hMax" class="admin-input"></div>
     </div>
 
-    <label>E-mail de Notificação</label>
-    <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-        <input type="email" id="cfgEmail" class="admin-input" style="flex: 2; margin-bottom: 0;">
-        <button onclick="enviarEmailTeste()" class="btn-action" style="flex: 1; font-size: 10px; padding: 0; height: 45px; background: transparent; color: var(--brand-accent); border: 1px solid var(--brand-accent); margin-bottom:0;">TESTAR</button>
+    <label>Serviço de Captura IR (Modo Learn)</label>
+    <div class="ir-grid" style="margin-bottom: 20px; background: #f8fafc; padding: 10px; border-radius: 10px;">
+        <button class="btn-learn" onclick="startLearn('power')">LER POWER</button>
+        <button class="btn-learn" onclick="startLearn('temp_up')">LER TEMP +</button>
+        <button class="btn-learn" onclick="startLearn('temp_down')">LER TEMP -</button>
+        <button class="btn-learn" onclick="startLearn('cool')">LER MODO FRIO</button>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-            <label>Intervalo Alerta (Min)</label>
-            <input type="number" id="cfgTempoEmail" class="admin-input" placeholder="Minutos">
-        </div>
-        <div>
-            <label>Freq. Registro</label>
-            <input type="number" id="cfgFreq" class="admin-input" placeholder="Qtd/Hora">
-        </div>
-    </div>
+    <label>Notificações</label>
+    <input type="email" id="cfgEmail" class="admin-input" placeholder="E-mail de alerta">
     
-    <div style="background: #f1f5f9; padding: 12px; border-radius: 10px; margin-bottom: 15px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-size: 11px; font-weight: 700;">Alertas: <span id="countEmailDisplay" style="color:var(--brand-accent)">0</span></span>
-            <button onclick="resetarContador()" style="background:var(--off); color:white; border:none; padding:4px 8px; border-radius:4px; font-size:9px; cursor:pointer;">ZERAR</button>
-        </div>
-    </div>
-
-    <div style="margin-top: 10px; border-top: 1px dashed #e2e8f0; padding-top: 15px; margin-bottom: 20px;">
-        <label style="color: var(--off);">Manutenção de Banco de Dados</label>
-        <button id="btnLimpar" onclick="executarLimpezaInteligente()" 
-            style="background: #fff; color: var(--off); border: 1.5px solid var(--off); padding: 10px; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 11px; transition: 0.3s;">
-            OTIMIZAR / LIMPAR HISTÓRICO ANTIGO
-        </button>
-    </div>
-
     <button id="btnSalvar" class="btn-action" style="background:var(--brand-primary); color:#fff;" onclick="salvarConfig()">Salvar Alterações</button>
     <button class="btn-action" style="background:transparent; color:var(--text-muted); border:1px solid #e2e8f0" onclick="fecharAdmin()">Cancelar</button>
+  </div>
+
+  <div id="acPanel">
+    <div class="logo-principal" style="font-size: 14px; margin-bottom: 10px;">Climatização Inteligente</div>
+    <div style="text-align: center;">
+        <div id="acModeBadge" class="mode-badge mode-manual">MODO MANUAL</div>
+    </div>
+    
+    <div class="ac-display">
+        <div style="font-size: 11px; color: #64748b; letter-spacing: 1px;">SISTEMA DE AR</div>
+        <div id="acStatusTemp" style="font-size: 38px; font-weight: 800; margin: 5px 0;">22°C</div>
+        <div id="acStatusPower" style="font-size: 10px; color: #00ff88; font-weight: 700;">AGUARDANDO COMANDO</div>
+    </div>
+
+    <div class="ir-grid">
+        <button class="btn-action" style="background:var(--off); color:white; grid-column: span 2;" onclick="sendIR('power')">LIGAR / DESLIGAR</button>
+        <button class="btn-action" style="background:var(--brand-accent); color:white;" onclick="sendIR('temp_up')">TEMP +</button>
+        <button class="btn-action" style="background:var(--brand-accent); color:white;" onclick="sendIR('temp_down')">TEMP -</button>
+        <button class="btn-action btn-history" style="grid-column: span 2;" onclick="toggleAutoMode()">ALTERNAR AUTO/MANUAL</button>
+    </div>
+    
+    <button class="btn-action" style="margin-top: 15px; background: none; color: var(--text-muted); font-size: 11px;" onclick="fecharAC()">← VOLTAR AO MONITORAMENTO</button>
   </div>
 
   <div class="header-main">
@@ -179,8 +203,8 @@
       <div class="dot"></div> <span>SINCRONIZANDO...</span>
     </div>
     <div class="info-client-box">
-        <div style="color: var(--text-muted); margin-bottom: 2px;">CLIENTE: <strong id="dispCliente" style="color: var(--brand-primary);">--</strong></div>
-        <div style="color: var(--text-muted);">LOCAL: <strong id="dispLocal" style="color: var(--brand-primary);">--</strong></div>
+        <div>CLIENTE: <strong id="dispCliente">--</strong></div>
+        <div>LOCAL: <strong id="dispLocal">--</strong></div>
     </div>
   </div>
 
@@ -199,7 +223,8 @@
 
   <div id="alertMessage"></div>
 
-  <button id="btnLED" class="btn-action btn-led off">Conectando...</button>
+  <button id="btnLED" class="btn-action btn-led off">CONECTANDO...</button>
+  <button class="btn-action" style="background: var(--brand-accent); color: white;" onclick="abrirAC()">CONTROLE AR CONDICIONADO</button>
   <button class="btn-action btn-history" onclick="location.href='historico.html'">Relatórios de Performance</button>
 </div>
 
@@ -215,8 +240,7 @@ firebase.initializeApp({
 const db = firebase.database();
 const auth = firebase.auth();
 
-// Configurações iniciais atualizadas
-let config = { tMin: 15, tMax: 35, hMin: 30, hMax: 80, intervalo: 2000, emailDestino: "", tempoEmail: 600000, contadorAlertas: 0, leiturasPorHora: 20, cliente: "", local: "" };
+let config = { tMin: 15, tMax: 35, hMin: 30, hMax: 80, emailDestino: "", acAuto: false };
 let gT, gH, ultimaVezAlertado = 0;
 
 function rodarDashboard() {
@@ -260,66 +284,55 @@ function rodarDashboard() {
   });
 }
 
+// LÓGICA DE ALERTA E AUTOMAÇÃO
 function analisarAlertas() {
   const t = parseFloat(document.getElementById("tempVal").innerText);
   const h = parseFloat(document.getElementById("humVal").innerText);
   const msg = document.getElementById("alertMessage");
+  
   let erro = (t > config.tMax || t < config.tMin || h > config.hMax || h < config.hMin);
   msg.innerText = erro ? "⚠️ ALERTA: PARÂMETROS FORA DA NORMA" : "";
   
-  if (erro && (Date.now() - ultimaVezAlertado > config.tempoEmail)) {
+  // Automação AC
+  if (config.acAuto && t > config.tMax) {
+      sendIR('cool'); // Aciona modo frio se automático ligado e quente
+      document.getElementById("acStatusPower").innerText = "AUTOMAÇÃO ATIVA: RESFRIANDO";
+  }
+
+  if (erro && (Date.now() - ultimaVezAlertado > (config.tempoEmail || 600000))) {
     enviarAlertaEmail(t, h);
   }
 }
 
-function enviarAlertaEmail(t, h) {
-  if (!config.emailDestino) return;
-  emailjs.send("service_kx31f3s", "template_mqzi3at", {
-    equipamento: "NewEnergy Monitor Pro",
-    tipo: "Anomalia Detectada",
-    valor: `Temp: ${t}°C | Hum: ${h}%`,
-    data: new Date().toLocaleString(),
-    para_email: config.emailDestino
-  }).then(() => {
-    ultimaVezAlertado = Date.now();
-    db.ref("/config_alertas/contadorAlertas").set((config.contadorAlertas || 0) + 1);
-  });
+// FUNÇÕES IR (CONTROLE E APRENDIZADO)
+function abrirAC() { document.getElementById("acPanel").style.display = "flex"; }
+function fecharAC() { document.getElementById("acPanel").style.display = "none"; }
+
+function sendIR(comando) {
+    db.ref("/ir_system/execute").set({ command: comando, ts: Date.now() });
+    document.getElementById("acStatusPower").innerText = "ENVIANDO: " + comando.toUpperCase();
+    setTimeout(() => { document.getElementById("acStatusPower").innerText = "SISTEMA PRONTO"; }, 2000);
 }
 
-async function executarLimpezaInteligente() {
-    const conf = confirm("Deseja remover registros com mais de 2 anos para otimizar o sistema?");
-    if (conf) {
-        const palavra = prompt("Digite 'LIMPAR' para confirmar:");
-        if (palavra !== "LIMPAR") return alert("Cancelado.");
-        const btn = document.getElementById('btnLimpar');
-        btn.innerText = "PROCESSANDO..."; btn.disabled = true;
-        try {
-            const snapshot = await db.ref("/historico/diario").once("value");
-            const hist = snapshot.val();
-            if (!hist) return alert("Sem dados.");
-            const dataCorte = new Date();
-            dataCorte.setFullYear(dataCorte.getFullYear() - 2);
-            let cont = 0;
-            for (const dStr in hist) {
-                if (new Date(dStr) < dataCorte) {
-                    await db.ref(`/historico/diario/${dStr}`).remove();
-                    cont++;
-                }
-            }
-            alert(`Manutenção concluída! ${cont} pastas removidas.`);
-        } catch (e) { alert("Erro na limpeza."); }
-        finally { btn.innerText = "OTIMIZAR / LIMPAR HISTÓRICO ANTIGO"; btn.disabled = false; }
+function startLearn(botao) {
+    if(confirm("O ESP32 entrará em modo de escuta. Aponte o controle e aperte " + botao)) {
+        db.ref("/ir_system/learn").set({ active: true, button: botao, ts: Date.now() });
+        alert("Modo captura ativado. Verifique o LED do sensor.");
     }
 }
 
-function enviarEmailTeste() {
-    const d = document.getElementById("cfgEmail").value;
-    if(!d) return alert("Digite um e-mail.");
-    emailjs.send("service_kx31f3s", "template_mqzi3at", {
-        equipamento: "NewEnergy - TESTE", tipo: "Verificação", valor: "OK", para_email: d
-    }).then(() => alert("Teste enviado!"));
+function toggleAutoMode() {
+    const novoEstado = !config.acAuto;
+    db.ref("/config_alertas/acAuto").set(novoEstado);
 }
 
+function atualizarInterfaceAC() {
+    const badge = document.getElementById("acModeBadge");
+    badge.innerText = config.acAuto ? "MODO AUTOMÁTICO" : "MODO MANUAL";
+    badge.className = "mode-badge " + (config.acAuto ? "mode-auto" : "mode-manual");
+}
+
+// LOGIN E CONFIGURAÇÃO
 let cliques = 0;
 document.getElementById("logoAdmin").onclick = () => {
   if(++cliques >= 5) {
@@ -329,9 +342,6 @@ document.getElementById("logoAdmin").onclick = () => {
     document.getElementById("hMin").value = config.hMin;
     document.getElementById("hMax").value = config.hMax;
     document.getElementById("cfgEmail").value = config.emailDestino;
-    document.getElementById("cfgFreq").value = config.leiturasPorHora;
-    document.getElementById("cfgTempoEmail").value = config.tempoEmail / 60000;
-    // Preenche novos campos no admin ao abrir
     document.getElementById("cfgCliente").value = config.cliente || "";
     document.getElementById("cfgLocal").value = config.local || "";
     cliques = 0;
@@ -345,18 +355,18 @@ function salvarConfig() {
     hMin: parseFloat(document.getElementById("hMin").value),
     hMax: parseFloat(document.getElementById("hMax").value),
     emailDestino: document.getElementById("cfgEmail").value,
-    leiturasPorHora: parseInt(document.getElementById("cfgFreq").value) || 20,
-    tempoEmail: (parseFloat(document.getElementById("cfgTempoEmail").value) || 10) * 60000,
     cliente: document.getElementById("cfgCliente").value,
     local: document.getElementById("cfgLocal").value
   };
-  db.ref("/config_alertas").update(updates).then(() => { alert("Salvo!"); fecharAdmin(); });
+  db.ref("/config_alertas").update(updates).then(() => { alert("Configurações Salvas!"); fecharAdmin(); });
 }
 
 function fecharAdmin() { document.getElementById("adminPanel").style.display = "none"; }
-function resetarContador() { if(confirm("Zerar?")) db.ref("/config_alertas/contadorAlertas").set(0); }
 function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
-document.getElementById("btnLED").onclick = () => { db.ref("/led").get().then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); };
+
+document.getElementById("btnLED").onclick = () => { 
+    db.ref("/led").transaction(current => current == 1 ? 0 : 1); 
+};
 
 auth.onAuthStateChanged(user => { 
   if (!user) window.location.replace("index.html"); 
@@ -364,10 +374,9 @@ auth.onAuthStateChanged(user => {
     db.ref("/config_alertas").on("value", s => { 
         if(s.val()) { 
             config = s.val(); 
-            document.getElementById("countEmailDisplay").innerText = config.contadorAlertas || 0;
-            // Atualiza exibição na tela principal
             document.getElementById("dispCliente").innerText = config.cliente || "Não definido";
             document.getElementById("dispLocal").innerText = config.local || "Não definido";
+            atualizarInterfaceAC();
         } 
     });
     rodarDashboard(); 
