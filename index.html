@@ -1,110 +1,239 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NewEnergy • Login / Cadastro</title>
-<style>
-body {margin:0; padding:0; display:flex; align-items:center; justify-content:center; height:100vh; background:linear-gradient(135deg, #000, #1e1e1e); font-family:Arial,sans-serif; color:white;}
-.box {width:90%; max-width:360px; background:#111; padding:30px; border-radius:15px; box-shadow:0 0 25px rgba(255,255,0,0.3); border:1px solid #333; text-align:center;}
-.box h2 {margin-bottom:20px; color:#f1c40f;}
-input {width:100%; padding:12px; margin-top:10px; border:none; border-radius:8px; background:#222; color:white; font-size:15px; outline:none;}
-button {width:100%; margin-top:18px; padding:12px; background:#f1c40f; border:none; border-radius:8px; font-size:16px; font-weight:bold; cursor:pointer;}
-button:hover {background:#ffe35a;}
-.msg {color:#ff5757; margin-top:12px; font-size:14px; display:none;}
-.tabs {display:flex; justify-content:space-around; margin-bottom:15px;}
-.tab {cursor:pointer; padding:10px 20px; border-radius:8px; background:#222; color:#fff; font-weight:bold;}
-.tab.active {background:#f1c40f; color:#000;}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>NewEnergy | Monitoramento Inteligente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      /* Paleta Panorama Health / High-End Tech */
+      --brand-primary: #1a365d;    /* Azul Marinho Corporativo */
+      --brand-accent: #007aff;     /* Azul Apple/Tech */
+      --bg-light: #f8fafc;        /* Cinza muito claro (fundo) */
+      --text-dark: #1e293b;        /* Texto principal */
+      --text-light: #64748b;       /* Texto secundário */
+      --error: #e11d48;
+      --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: var(--bg-light);
+      background-image: radial-gradient(at 0% 0%, rgba(0, 122, 255, 0.03) 0, transparent 50%), 
+                        radial-gradient(at 50% 0%, rgba(26, 54, 93, 0.03) 0, transparent 50%);
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      text-align: left;
+    }
+
+    .header {
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .logo-badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--brand-accent);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+      color: var(--brand-primary);
+      letter-spacing: -0.5px;
+    }
+
+    p {
+      color: var(--text-light);
+      font-size: 14px;
+      margin: 8px 0 0 0;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-size: 13px;
+      color: var(--text-dark);
+      font-weight: 500;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      color: var(--text-dark);
+      font-size: 15px;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--brand-accent);
+      box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      background: var(--brand-primary);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #2d4a77;
+      box-shadow: 0 4px 12px rgba(26, 54, 93, 0.2);
+    }
+
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    #error {
+      font-size: 13px;
+      color: var(--error);
+      background: #fff1f2;
+      border: 1px solid #ffe4e6;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      display: none;
+      text-align: center;
+    }
+
+    .footer-note {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid #f1f5f9;
+      font-size: 12px;
+      color: var(--text-light);
+      text-align: center;
+    }
+
+    /* Suavização de scroll e seleção */
+    ::selection { background: rgba(0, 122, 255, 0.2); }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 
-<div class="box">
-    <div class="tabs">
-        <div class="tab active" id="tabLogin" onclick="showTab('login')">Login</div>
-        <div class="tab" id="tabCadastro" onclick="showTab('cadastro')">Cadastro</div>
+  <div class="card">
+    <div class="header">
+      <div class="logo-badge">Industrial Intelligence</div>
+      <h1>NewEnergy</h1>
+      <p>Acesse o portal de monitoramento</p>
     </div>
 
-    <!-- LOGIN -->
-    <div id="loginBox">
-        <input type="email" id="loginEmail" placeholder="Email">
-        <input type="password" id="loginSenha" placeholder="Senha">
-        <button onclick="login()">Entrar</button>
-        <div class="msg" id="msgLogin"></div>
+    <div id="error"></div>
+
+    <div class="input-group">
+      <label>E-mail Corporativo</label>
+      <input type="email" id="email" placeholder="exemplo@empresa.com.br">
     </div>
 
-    <!-- CADASTRO -->
-    <div id="cadastroBox" style="display:none;">
-        <input type="email" id="cadEmail" placeholder="Email">
-        <input type="password" id="cadSenha" placeholder="Senha">
-        <button onclick="cadastrar()">Cadastrar</button>
-        <div class="msg" id="msgCadastro"></div>
+    <div class="input-group">
+      <label>Senha de Acesso</label>
+      <input type="password" id="password" placeholder="Digite sua senha">
     </div>
-</div>
 
-<!-- Firebase compat -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <button id="btnLogin">Entrar no Sistema</button>
 
-<script>
-  // Config Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyAEgLyJ6i2ZaSNnBrLMoe2ajInd4MGKHIs",
-    authDomain: "controle-led-esp-oficial.firebaseapp.com",
-    databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
-    projectId: "controle-led-esp-oficial",
-    storageBucket: "controle-led-esp-oficial.firebasestorage.app",
-    messagingSenderId: "1082980860084",
-    appId: "1:1082980860084:web:b3b669b8f1801c3d6657e1"
-  };
+    <div class="footer-note">
+      &copy; 2024 NewEnergy Solutions • Infraestrutura Crítica
+    </div>
+  </div>
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.database();
+  <script>
+    // Configuração do Firebase (Mantida a original)
+    const firebaseConfig = {
+      apiKey: "AIzaSyB5FnkQiFi3gn9Iup2KNcbrKxWd-0Jjo6Y",
+      authDomain: "oficial-688e8.firebaseapp.com",
+      databaseURL: "https://oficial-688e8-default-rtdb.firebaseio.com/",
+      projectId: "oficial-688e8"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-  // Troca de abas
-  function showTab(tab){
-      document.getElementById("loginBox").style.display = tab==='login' ? 'block':'none';
-      document.getElementById("cadastroBox").style.display = tab==='cadastro' ? 'block':'none';
-      document.getElementById("tabLogin").classList.toggle("active", tab==='login');
-      document.getElementById("tabCadastro").classList.toggle("active", tab==='cadastro');
-      document.getElementById("msgLogin").style.display="none";
-      document.getElementById("msgCadastro").style.display="none";
-  }
+    const emailEl = document.getElementById("email");
+    const passEl = document.getElementById("password");
+    const btnLogin = document.getElementById("btnLogin");
+    const errorEl = document.getElementById("error");
 
-  // Função login
-  function login(){
-      const email = document.getElementById("loginEmail").value;
-      const senha = document.getElementById("loginSenha").value;
-      if(!email || !senha){showMsg("msgLogin","Preencha todos os campos!"); return;}
-      auth.signInWithEmailAndPassword(email, senha)
-        .then(userCredential => {window.location.href="painel.html";})
-        .catch(error => showMsg("msgLogin",error.message));
-  }
+    auth.onAuthStateChanged(user => {
+      if (user) window.location.href = "painel.html";
+    });
 
-  // Função cadastro
-  function cadastrar(){
-      const email = document.getElementById("cadEmail").value;
-      const senha = document.getElementById("cadSenha").value;
-      if(!email || !senha){showMsg("msgCadastro","Preencha todos os campos!"); return;}
-      if(senha.length<6){showMsg("msgCadastro","Senha deve ter pelo menos 6 caracteres!"); return;}
-      auth.createUserWithEmailAndPassword(email, senha)
-        .then(userCredential => {
-            const uid = userCredential.user.uid;
-            // Cria nó no DB para controlar plano do usuário
-            db.ref("usuarios/"+uid).set({ativo:false, criado:Date.now()});
-            showMsg("msgCadastro","Cadastro realizado! Aguarde ativação após pagamento.",true);
+    btnLogin.addEventListener("click", () => {
+      const email = emailEl.value;
+      const pass = passEl.value;
+
+      if(!email || !pass) {
+        showError("Preencha todos os campos para prosseguir.");
+        return;
+      }
+
+      btnLogin.innerText = "Autenticando...";
+      btnLogin.disabled = true;
+      errorEl.style.display = "none";
+
+      auth.signInWithEmailAndPassword(email, pass)
+        .then(() => {
+          window.location.href = "painel.html";
         })
-        .catch(error => showMsg("msgCadastro",error.message,false));
-  }
+        .catch(err => { 
+          btnLogin.innerText = "Entrar no Sistema";
+          btnLogin.disabled = false;
+          showError("Acesso negado. Verifique suas credenciais."); 
+        });
+    });
 
-  function showMsg(id,msg,sucesso=false){
-      const el = document.getElementById(id);
-      el.innerText = msg;
-      el.style.color = sucesso ? "#4cff4c":"#ff5757";
-      el.style.display="block";
-  }
-</script>
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.style.display = "block";
+    }
+
+    document.addEventListener("keypress", (e) => {
+      if(e.key === "Enter") btnLogin.click();
+    });
+  </script>
 </body>
 </html>
