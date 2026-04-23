@@ -3,12 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NewEnergy | Monitor Pro Intelligence</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<title>NewEnergy | Monitor Pro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root { 
     --brand-primary: #1a365d; --brand-accent: #007aff; --bg-body: #f1f5f9; 
-    --card-bg: #ffffff; --on: #10b981; --off: #e11d48; --text-muted: #64748b; 
+    --card-bg: #ffffff; --text-main: #1e293b; --text-muted: #64748b;
+    --on: #10b981; --off: #e11d48;
   }
   
   body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
@@ -16,165 +17,139 @@
   .card { background: var(--card-bg); border-radius: 20px; padding: 35px; width: 100%; max-width: 440px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center; position: relative; }
 
   /* CABEÇALHO */
-  .logo-principal { font-size: 18px; text-transform: uppercase; letter-spacing: 3px; font-weight: 900; color: var(--brand-primary); cursor: pointer; margin-bottom: 25px; display: block; }
+  .logo-principal { font-size: 18px; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: var(--brand-primary); cursor: pointer; margin-bottom: 25px; display: block; }
 
-  /* TELAS SOBREPOSTAS (CORRIGIDO) */
-  .full-screen-panel { 
+  /* GAUGES (DESIGN ORIGINAL) */
+  .gauges-container { display: flex; gap: 15px; margin-bottom: 25px; }
+  .gauge-box { flex: 1; background: #f8fafc; padding: 20px 10px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; border: 1px solid #f1f5f9; }
+  .gauge-box canvas { width: 140px !important; height: 85px !important; }
+  .g-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
+  .g-value { font-size: 22px; font-weight: 800; color: var(--brand-primary); }
+
+  /* BOTÕES */
+  .btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; transition: 0.2s; }
+  .btn-led.on { background: var(--brand-primary); color: #fff; }
+  .btn-led.off { background: #e2e8f0; color: var(--text-muted); }
+
+  /* PAINÉIS (CORREÇÃO CIRÚRGICA DE NAVEGAÇÃO) */
+  #adminPanel, #acPanel { 
     display: none; 
     position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    background: #ffffff; 
-    z-index: 9999; /* Garante que fique na frente de tudo */
-    flex-direction: column; 
-    padding: 40px 25px; 
-    box-sizing: border-box; 
-    overflow-y: auto;
+    top: 0; left: 0; width: 100%; height: 100%; 
+    background: #ffffff; z-index: 9999; 
+    flex-direction: column; padding: 30px; box-sizing: border-box; overflow-y: auto;
   }
 
-  /* BOTÕES E INPUTS */
-  .btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; transition: 0.2s; }
-  .btn-primary { background: var(--brand-primary); color: #fff; }
-  .btn-accent { background: var(--brand-accent); color: #fff; }
-  .btn-outline { background: none; border: 1.5px solid #ddd; color: var(--text-muted); }
-  
-  .admin-input { background: #f8fafc; border: 1.5px solid #e2e8f0; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 20px; font-size: 14px; box-sizing: border-box; outline: none; }
-  label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-align: left; display: block; margin-bottom: 5px; text-transform: uppercase; }
-
-  /* DISPLAY DE SENSORES */
-  .sensor-display { margin-bottom: 30px; }
-  .temp-main { font-size: 48px; font-weight: 900; color: var(--brand-primary); margin: 0; }
-  .hum-sub { font-size: 18px; color: var(--text-muted); margin-top: -5px; }
-
+  .admin-input { background: #f8fafc; border: 1.5px solid #e2e8f0; padding: 12px; border-radius: 8px; width: 100%; margin-bottom: 15px; box-sizing: border-box; }
   .ir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; display: block; text-align: left; margin-bottom: 5px; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
 </head>
 <body>
 
 <div class="card">
   <span class="logo-principal" id="logoAdmin">NewEnergy</span>
   
-  <div class="sensor-display">
-    <h1 id="tempVal" class="temp-main">--°C</h1>
-    <div id="humVal" class="hum-sub">Umidade: --%</div>
+  <div class="gauges-container">
+    <div class="gauge-box">
+        <div class="g-title">Temperatura</div>
+        <canvas id="gTemp"></canvas>
+        <div id="tempVal" class="g-value">--°C</div>
+    </div>
+    <div class="gauge-box">
+        <div class="g-title">Umidade</div>
+        <canvas id="gHum"></canvas>
+        <div id="humVal" class="g-value">--%</div>
+    </div>
   </div>
 
-  <button id="btnLED" class="btn-action btn-outline">Ligar Iluminação</button>
-  <button class="btn-action btn-accent" onclick="abrir('acPanel')">Climatização (Ar)</button>
-  <button class="btn-action btn-outline" onclick="window.location.href='historico.html'">Relatórios</button>
+  <button id="btnLED" class="btn-action btn-led off">Ligar Iluminação</button>
+  <button class="btn-action" style="background:var(--brand-accent); color:#fff;" onclick="abrirAC()">Controle Climatização</button>
+  <button class="btn-action" style="background:none; border:1px solid #ddd; color:var(--text-muted);" onclick="window.location.href='historico.html'">Relatórios</button>
 
-  <div id="acPanel" class="full-screen-panel">
-    <div class="logo-principal">Controle de Ar</div>
-    <div id="statusAC" style="font-size:12px; font-weight:700; margin-bottom:20px; color:var(--brand-accent)">MODO MANUAL</div>
-
+  <div id="acPanel">
+    <div class="logo-principal">Climatização</div>
+    <div id="badgeAC" style="font-size:11px; font-weight:800; padding:8px; background:#f1f5f9; border-radius:8px; margin-bottom:20px;">MODO MANUAL</div>
     <div class="ir-grid">
-        <button class="btn-action btn-primary" onclick="sendIR('on')">Ligar</button>
+        <button class="btn-action" style="background:var(--brand-primary); color:#fff;" onclick="sendIR('on')">Ligar</button>
         <button class="btn-action" style="background:var(--off); color:#fff;" onclick="sendIR('off')">Desligar</button>
     </div>
-    
-    <button class="btn-action btn-outline" onclick="fechar('acPanel')" style="margin-top: auto;">Sair / Voltar</button>
+    <button class="btn-action" style="background:none; border:1px solid #ddd;" onclick="fecharAC()">VOLTAR / SAIR</button>
   </div>
 
-  <div id="adminPanel" class="full-screen-panel">
-    <div class="logo-principal">Configurações</div>
+  <div id="adminPanel">
+    <div class="logo-principal">Engenharia</div>
+    <label>NOME DO CLIENTE</label>
+    <input type="text" id="cfgCliente" class="admin-input">
     
-    <div style="text-align: left;">
-        <label>Nome do Cliente / Unidade</label>
-        <input type="text" id="cfgCliente" class="admin-input" placeholder="Ex: Hospital Unimed">
-        
-        <label>Configurar Infravermelho (Learn)</label>
-        <div class="ir-grid">
-            <button class="btn-action btn-outline" style="font-size:10px;" onclick="startLearn('on')">Gravar On</button>
-            <button class="btn-action btn-outline" style="font-size:10px;" onclick="startLearn('off')">Gravar Off</button>
-        </div>
+    <label>APRENDER INFRAVERMELHO (LEARN)</label>
+    <div class="ir-grid">
+        <button class="btn-action" style="background:none; border:1px dashed var(--brand-accent); color:var(--brand-accent); font-size:10px;" onclick="startLearn('on')">GRAVAR LIGAR</button>
+        <button class="btn-action" style="background:none; border:1px dashed var(--brand-accent); color:var(--brand-accent); font-size:10px;" onclick="startLearn('off')">GRAVAR DESLIGAR</button>
     </div>
 
-    <div style="margin-top: auto;">
-        <button class="btn-action btn-primary" onclick="salvarAdmin()">Salvar e Sair</button>
-        <button class="btn-action btn-outline" onclick="fechar('adminPanel')">Cancelar</button>
-    </div>
+    <button class="btn-action" style="background:var(--brand-primary); color:#fff;" onclick="salvarAdmin()">SALVAR TUDO</button>
+    <button class="btn-action" style="background:none; border:1px solid #ddd;" onclick="fecharAdmin()">CANCELAR / SAIR</button>
   </div>
 </div>
 
 <script>
-// CONFIGURAÇÃO FIREBASE
-firebase.initializeApp({
-   databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
-});
+// Firebase
+firebase.initializeApp({ databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com" });
 const db = firebase.database();
 
-// --- FUNÇÕES DE NAVEGAÇÃO ---
-function abrir(id) {
-    document.getElementById(id).style.display = "flex";
+// Inicialização dos Gauges (Design Original)
+let gT, gH;
+function initGauges() {
+    const opt = (col) => ({ angle: 0.15, lineWidth: 0.2, radiusScale: 0.9, pointer: { length: 0.5, strokeWidth: 0.03, color: '#1a365d' }, colorStart: col, colorStop: col, strokeColor: '#e2e8f0', generateGradient: true, highDpiSupport: true });
+    gT = new Gauge(document.getElementById("gTemp")).setOptions(opt('#e11d48'));
+    gT.maxValue = 50; gT.setMinValue(0); gT.set(0);
+    gH = new Gauge(document.getElementById("gHum")).setOptions(opt('#007aff'));
+    gH.maxValue = 100; gH.setMinValue(0); gH.set(0);
 }
+initGauges();
 
-function fechar(id) {
-    document.getElementById(id).style.display = "none";
-}
+// Funções de Navegação (Correção Cirúrgica)
+function abrirAC() { document.getElementById("acPanel").style.display = "flex"; }
+function fecharAC() { document.getElementById("acPanel").style.display = "none"; }
+function fecharAdmin() { document.getElementById("adminPanel").style.display = "none"; }
 
-// --- LOGICA DE ADMIN ---
 function salvarAdmin() {
-    const cliente = document.getElementById("cfgCliente").value;
-    db.ref("/config_alertas").update({
-        cliente: cliente
-    }).then(() => {
-        alert("Configurações atualizadas!");
-        fechar('adminPanel');
-    });
+    db.ref("/config_alertas").update({ cliente: document.getElementById("cfgCliente").value })
+    .then(() => { alert("Configurações salvas!"); fecharAdmin(); });
 }
 
-function startLearn(funcao) {
-    db.ref("/ir_system/learn").set({
-        active: true,
-        function: funcao,
-        ts: Date.now()
-    });
-    alert("MODO APRENDER: Aponte o controle e pressione " + funcao.toUpperCase());
+function sendIR(cmd) {
+    db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() });
+    const b = document.getElementById("badgeAC");
+    b.innerText = "ENVIANDO SINAL...";
+    setTimeout(() => b.innerText = "MODO MANUAL", 2000);
 }
 
-// --- LOGICA DE COMANDOS ---
-function sendIR(comando) {
-    db.ref("/ir_system/execute").set({
-        command: comando,
-        ts: Date.now()
-    });
-    const status = document.getElementById("statusAC");
-    status.innerText = "ENVIANDO SINAL...";
-    setTimeout(() => status.innerText = "MODO MANUAL", 2000);
+function startLearn(f) {
+    db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() });
+    alert("MODO LEARN: Aperte o botão no controle agora!");
 }
 
-// ATIVAÇÃO ADMIN (5 CLIQUES NO LOGO)
+// Admin Invisível
 let cliques = 0;
-document.getElementById("logoAdmin").onclick = () => {
-    cliques++;
-    if(cliques >= 5) {
-        abrir('adminPanel');
-        cliques = 0;
-    }
-};
+document.getElementById("logoAdmin").onclick = () => { if(++cliques >= 5) { document.getElementById("adminPanel").style.display = "flex"; cliques = 0; } };
 
-// --- SINCRONIZAÇÃO EM TEMPO REAL ---
-db.ref("/temp").on("value", s => document.getElementById("tempVal").innerText = (s.val() || "--") + "°C");
-db.ref("/hum").on("value", s => document.getElementById("humVal").innerText = "Umidade: " + (s.val() || "--") + "%");
-
+// Sincronização de Dados
+db.ref("/temp").on("value", s => { const v = parseFloat(s.val()) || 0; gT.set(v); document.getElementById("tempVal").innerText = v.toFixed(1) + "°C"; });
+db.ref("/hum").on("value", s => { const v = parseFloat(s.val()) || 0; gH.set(v); document.getElementById("humVal").innerText = v.toFixed(0) + "%"; });
 db.ref("/led").on("value", s => {
-    const btn = document.getElementById("btnLED");
-    const ligado = s.val() == 1;
-    btn.innerText = ligado ? "LUZ LIGADA" : "LIGAR ILUMINAÇÃO";
-    btn.style.background = ligado ? "var(--brand-primary)" : "none";
-    btn.style.color = ligado ? "#fff" : "var(--text-muted)";
+    const b = document.getElementById("btnLED");
+    const on = s.val() == 1;
+    b.innerText = on ? "LUZ LIGADA" : "LIGAR ILUMINAÇÃO";
+    b.className = "btn-action btn-led " + (on ? "on" : "off");
 });
+document.getElementById("btnLED").onclick = () => { db.ref("/led").once('value', s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); };
 
-document.getElementById("btnLED").onclick = () => {
-    db.ref("/led").once('value', s => {
-        db.ref("/led").set(s.val() == 1 ? 0 : 1);
-    });
-};
 </script>
 </body>
 </html>
