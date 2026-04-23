@@ -33,7 +33,7 @@
   .g-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
   .g-value { font-size: 22px; font-weight: 800; color: var(--brand-primary); }
 
-  /* BOTÕES PADRÃO */
+  /* BOTÕES */
   .btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
   .btn-led.on { background: var(--brand-primary); color: #fff; }
   .btn-led.off { background: #e2e8f0; color: var(--text-muted); }
@@ -42,7 +42,6 @@
   /* PAINÉIS OCULTOS */
   #adminPanel, #acPanel { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border-radius: 20px; padding: 25px; box-sizing: border-box; z-index: 100; flex-direction: column; overflow-y: auto; }
   
-  /* ABAS ADMIN */
   .admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 10px; }
   .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 7px; font-size: 9px; font-weight: 800; cursor: pointer; background: transparent; color: var(--text-muted); }
   .tab-btn.active { background: #fff; color: var(--brand-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -52,7 +51,6 @@
   .admin-input { background: #f8fafc; border: 1.5px solid #e2e8f0; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; margin-bottom: 12px; outline: none; }
   label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; display: block; }
 
-  /* AC DISPLAY DESIGN */
   .ac-display { background: #0f172a; color: #fff; padding: 20px; border-radius: 15px; margin: 15px 0; display: flex; justify-content: space-around; border: 1px solid #1e293b; }
   .ac-unit span { display: block; font-size: 9px; color: #64748b; margin-bottom: 5px; }
   .ac-unit div { font-size: 28px; font-weight: 800; font-family: monospace; }
@@ -158,7 +156,7 @@
 </div>
 
 <script>
-// CREDENCIAIS ATUALIZADAS
+// CREDENCIAIS ATUALIZADAS (controle-led-esp-oficial)
 firebase.initializeApp({
   apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
   authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -207,12 +205,15 @@ auth.onAuthStateChanged(user => {
             document.getElementById("badgeAC").innerText = config.acAuto ? "MODO AUTOMÁTICO" : "MODO MANUAL";
             document.getElementById("badgeAC").style.background = config.acAuto ? "#dcfce7" : "#f1f5f9";
             
-            // Auto-preenchimento Admin
+            // PREENCHIMENTO AUTOMÁTICO DOS INPUTS (CORREÇÃO PARA SALVAR)
             document.getElementById("cfgCliente").value = config.cliente || "";
             document.getElementById("cfgLocal").value = config.local || "";
-            document.getElementById("tMax").value = config.tMax || 30;
-            document.getElementById("hMax").value = config.hMax || 80;
+            document.getElementById("tMax").value = config.tMax || "";
+            document.getElementById("hMax").value = config.hMax || "";
             document.getElementById("cfgEmail").value = config.emailDestino || "";
+            if(document.getElementById("cfgTempoEmail")) {
+                document.getElementById("cfgTempoEmail").value = (config.tempoEmail / 60000) || 10;
+            }
         }
     });
 
@@ -237,16 +238,23 @@ auth.onAuthStateChanged(user => {
   } else { window.location.replace("index.html"); }
 });
 
-// AÇÕES
+// AÇÕES DE SALVAMENTO (CORRIGIDO)
 function salvarConfig() {
-    db.ref("/config_alertas").update({
+    const novosDados = {
         cliente: document.getElementById("cfgCliente").value,
         local: document.getElementById("cfgLocal").value,
-        tMax: parseFloat(document.getElementById("tMax").value),
-        hMax: parseFloat(document.getElementById("hMax").value),
+        tMax: parseFloat(document.getElementById("tMax").value) || 30,
+        hMax: parseFloat(document.getElementById("hMax").value) || 80,
         emailDestino: document.getElementById("cfgEmail").value,
         tempoEmail: (parseFloat(document.getElementById("cfgTempoEmail").value) || 10) * 60000
-    }).then(() => { alert("Configurações salvas!"); fecharAdmin(); });
+    };
+
+    db.ref("/config_alertas").update(novosDados)
+    .then(() => { 
+        alert("Configurações atualizadas!"); 
+        fecharAdmin(); 
+    })
+    .catch(e => alert("Erro ao salvar: " + e.message));
 }
 
 function sendIR(cmd) { db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); }
@@ -256,7 +264,7 @@ function toggleAuto() { db.ref("/config_alertas/acAuto").set(!config.acAuto); }
 function zerarContador() { db.ref("/config_alertas/contadorAlertas").set(0); }
 function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
-// ADMIN INVISÍVEL
+// ACESSO ENGENHARIA (LOGO)
 let cliques = 0;
 document.getElementById("logoAdmin").onclick = () => { if(++cliques >= 5) { document.getElementById("adminPanel").style.display = "flex"; cliques = 0; } };
 document.getElementById("btnLED").onclick = () => { db.ref("/led").set(document.getElementById("btnLED").classList.contains('off') ? 1 : 0); };
