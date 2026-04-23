@@ -33,15 +33,16 @@
   .g-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
   .g-value { font-size: 22px; font-weight: 800; color: var(--brand-primary); }
 
-  /* BOTÕES */
+  /* BOTÕES PADRÃO */
   .btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
   .btn-led.on { background: var(--brand-primary); color: #fff; }
   .btn-led.off { background: #e2e8f0; color: var(--text-muted); }
   .btn-history { background: #fff; color: var(--brand-accent); border: 1.5px solid var(--brand-accent); }
 
-  /* PAINÉIS OCULTOS (CORREÇÃO DE Z-INDEX) */
+  /* PAINÉIS OCULTOS */
   #adminPanel, #acPanel { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border-radius: 20px; padding: 25px; box-sizing: border-box; z-index: 100; flex-direction: column; overflow-y: auto; }
   
+  /* ABAS ADMIN */
   .admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 10px; }
   .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 7px; font-size: 9px; font-weight: 800; cursor: pointer; background: transparent; color: var(--text-muted); }
   .tab-btn.active { background: #fff; color: var(--brand-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -51,13 +52,12 @@
   .admin-input { background: #f8fafc; border: 1.5px solid #e2e8f0; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; margin-bottom: 12px; outline: none; }
   label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; display: block; }
 
+  /* AC DISPLAY DESIGN */
   .ac-display { background: #0f172a; color: #fff; padding: 20px; border-radius: 15px; margin: 15px 0; display: flex; justify-content: space-around; border: 1px solid #1e293b; }
   .ac-unit span { display: block; font-size: 9px; color: #64748b; margin-bottom: 5px; }
   .ac-unit div { font-size: 28px; font-weight: 800; font-family: monospace; }
   .ir-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .btn-learn { background: #fff; border: 1px dashed var(--brand-accent); color: var(--brand-accent); padding: 10px; border-radius: 8px; font-size: 9px; font-weight: 800; cursor: pointer; }
-
-  #alertMessage { min-height: 20px; font-size: 12px; margin-bottom: 10px; color: var(--off); font-weight: 700; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -92,10 +92,8 @@
 
     <div id="tabManut" class="tab-content">
         <div style="background:#f8fafc; padding:15px; border-radius:12px; margin-bottom:15px;">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:11px; font-weight:800;">Alertas Enviados: <span id="countEmail" style="color:var(--brand-accent)">0</span></span>
-                <button onclick="zerarContador()" style="background:var(--off); color:white; border:none; padding:5px 10px; border-radius:6px; font-size:9px; cursor:pointer;">ZERAR</button>
-            </div>
+            <span style="font-size:11px; font-weight:800;">Alertas Enviados: <span id="countEmail" style="color:var(--brand-accent)">0</span></span>
+            <button onclick="zerarContador()" style="float:right; background:var(--off); color:white; border:none; padding:5px 10px; border-radius:6px; font-size:9px; cursor:pointer;">ZERAR</button>
         </div>
         <label>Intervalo E-mail (min)</label>
         <input type="number" id="cfgTempoEmail" class="admin-input" placeholder="Ex: 10">
@@ -111,7 +109,7 @@
         </div>
     </div>
 
-    <div style="margin-top: 20px; display: flex; gap: 10px;">
+    <div style="margin-top: auto; display: flex; gap: 10px; padding-top: 20px;">
         <button class="btn-action" style="background:var(--brand-primary); color:#fff; flex: 2;" onclick="salvarConfig()">SALVAR TUDO</button>
         <button class="btn-action" style="background:none; border:1px solid #e2e8f0; flex: 1; font-size:11px;" onclick="fecharAdmin()">SAIR</button>
     </div>
@@ -154,20 +152,18 @@
     <div class="gauge-box"><div class="g-title">Umidade</div><canvas id="gHum"></canvas><div id="humVal" class="g-value">--%</div></div>
   </div>
 
-  <div id="alertMessage"></div>
-
   <button id="btnLED" class="btn-action btn-led off">Ligar Iluminação</button>
-  <button class="btn-action" style="background:var(--brand-accent); color:#fff; box-shadow: 0 4px 15px rgba(0,122,255,0.2);" onclick="abrirAC()">Controle Climatização</button>
+  <button class="btn-action" style="background:var(--brand-accent); color:#fff;" onclick="abrirAC()">Controle Climatização</button>
   <button class="btn-action btn-history" onclick="window.location.href='historico.html'">Relatórios de Performance</button>
 </div>
 
 <script>
-// CONFIGURAÇÃO FIREBASE (ORIGINAL)
+// CREDENCIAIS ATUALIZADAS
 firebase.initializeApp({
-  apiKey: "AIzaSyB5FnkQiFi3gn9Iup2KNcbrKxWd-0Jjo6Y",
-  authDomain: "oficial-688e8.firebaseapp.com",
-  databaseURL: "https://oficial-688e8-default-rtdb.firebaseio.com/",
-  projectId: "oficial-688e8"
+  apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
+  authDomain: "controle-led-esp-oficial.firebaseapp.com",
+  databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
+  projectId: "controle-led-esp-oficial"
 });
 
 const db = firebase.database();
@@ -200,17 +196,18 @@ auth.onAuthStateChanged(user => {
   if (user) {
     initGauges();
     db.ref("/config_alertas").on("value", s => {
-        if(s.val()) {
-            config = {...config, ...s.val()};
+        const val = s.val();
+        if(val) {
+            config = {...config, ...val};
             document.getElementById("dispCliente").innerText = config.cliente || "--";
             document.getElementById("dispLocal").innerText = config.local || "--";
             document.getElementById("countEmail").innerText = config.contadorAlertas || 0;
-            document.getElementById("acAlvo").innerText = config.setpoint + "°";
+            document.getElementById("acAlvo").innerText = (config.setpoint || 22) + "°";
             document.getElementById("btnAuto").innerText = config.acAuto ? "DESATIVAR AUTO" : "ATIVAR AUTOMÁTICO";
             document.getElementById("badgeAC").innerText = config.acAuto ? "MODO AUTOMÁTICO" : "MODO MANUAL";
             document.getElementById("badgeAC").style.background = config.acAuto ? "#dcfce7" : "#f1f5f9";
             
-            // Preenche inputs do Admin
+            // Auto-preenchimento Admin
             document.getElementById("cfgCliente").value = config.cliente || "";
             document.getElementById("cfgLocal").value = config.local || "";
             document.getElementById("tMax").value = config.tMax || 30;
@@ -220,24 +217,22 @@ auth.onAuthStateChanged(user => {
     });
 
     db.ref("/temp").on("value", s => {
-        const v = parseFloat(s.val()) || 0; 
-        gT.set(v);
+        const v = parseFloat(s.val()) || 0; gT.set(v);
         document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
         document.getElementById("acReal").innerText = v.toFixed(0) + "°";
         if(config.acAuto && v > config.setpoint) sendIR('cool');
     });
 
     db.ref("/hum").on("value", s => { 
-        const h = parseFloat(s.val()) || 0;
-        gH.set(h); 
-        document.getElementById("humVal").innerText = h.toFixed(0) + "%"; 
+        const v = parseFloat(s.val()) || 0; gH.set(v); 
+        document.getElementById("humVal").innerText = v.toFixed(0) + "%"; 
     });
 
     db.ref("/led").on("value", s => {
         const b = document.getElementById("btnLED");
-        const on = s.val() == 1;
-        b.innerText = on ? "Luz Ligada" : "Ligar Iluminação";
-        b.className = "btn-action btn-led " + (on ? "on" : "off");
+        const ligado = s.val() == 1;
+        b.innerText = ligado ? "Luz Ligada" : "Ligar Iluminação";
+        b.className = "btn-action btn-led " + (ligado ? "on" : "off");
     });
   } else { window.location.replace("index.html"); }
 });
@@ -249,16 +244,14 @@ function salvarConfig() {
         local: document.getElementById("cfgLocal").value,
         tMax: parseFloat(document.getElementById("tMax").value),
         hMax: parseFloat(document.getElementById("hMax").value),
-        emailDestino: document.getElementById("cfgEmail").value
-    }).then(() => {
-        alert("Configurações salvas!");
-        fecharAdmin();
-    });
+        emailDestino: document.getElementById("cfgEmail").value,
+        tempoEmail: (parseFloat(document.getElementById("cfgTempoEmail").value) || 10) * 60000
+    }).then(() => { alert("Configurações salvas!"); fecharAdmin(); });
 }
 
 function sendIR(cmd) { db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); }
-function startLearn(f) { db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() }); alert("Gravando canal: " + f); }
-function ajustarSetpoint(v) { db.ref("/config_alertas/setpoint").set(config.setpoint + v); }
+function startLearn(f) { db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() }); alert("Sensor em escuta para: " + f); }
+function ajustarSetpoint(v) { db.ref("/config_alertas/setpoint").set((config.setpoint || 22) + v); }
 function toggleAuto() { db.ref("/config_alertas/acAuto").set(!config.acAuto); }
 function zerarContador() { db.ref("/config_alertas/contadorAlertas").set(0); }
 function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
