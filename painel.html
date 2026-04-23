@@ -16,7 +16,7 @@
   
   .card { background: var(--card-bg); border-radius: 20px; padding: 35px; width: 100%; max-width: 440px; box-shadow: var(--shadow); position: relative; overflow: hidden; text-align: center; }
 
-  /* CABEÇALHO ORIGINAL */
+  /* CABEÇALHO */
   .header-main { position: relative; margin-bottom: 25px; }
   .logo-principal { font-size: 18px; text-transform: uppercase; letter-spacing: 3px; font-weight: 800; color: var(--brand-primary); cursor: pointer; }
   .btn-logout { position: absolute; top: -15px; right: -15px; background: #fff1f2; border: 1px solid #ffe4e6; color: var(--off); padding: 6px 12px; border-radius: 8px; font-size: 10px; cursor: pointer; font-weight: 700; }
@@ -26,23 +26,35 @@
   .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--on); box-shadow: 0 0 8px var(--on); }
   .info-client-box { text-align: left; padding: 12px; border-left: 3px solid var(--brand-accent); background: #f8fafc; border-radius: 0 10px 10px 0; font-size: 12px; margin-bottom: 25px; }
 
-  /* GAUGES ORIGINAIS */
+  /* GAUGES */
   .gauges-container { display: flex; gap: 15px; margin-bottom: 25px; }
   .gauge-box { flex: 1; background: #f8fafc; padding: 20px 10px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; border: 1px solid #f1f5f9; }
   .gauge-box canvas { width: 140px !important; height: 85px !important; }
   .g-title { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; }
   .g-value { font-size: 22px; font-weight: 800; color: var(--brand-primary); }
 
-  /* BOTÕES PADRÃO */
+  /* BOTÕES */
   .btn-action { width: 100%; padding: 16px; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 12px; text-transform: uppercase; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
   .btn-led.on { background: var(--brand-primary); color: #fff; }
   .btn-led.off { background: #e2e8f0; color: var(--text-muted); }
   .btn-history { background: #fff; color: var(--brand-accent); border: 1.5px solid var(--brand-accent); }
 
-  /* PAINÉIS OCULTOS */
-  #adminPanel, #acPanel { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; border-radius: 20px; padding: 25px; box-sizing: border-box; z-index: 100; flex-direction: column; overflow-y: auto; }
+  /* PAINÉIS FIXOS (CORRIGIDO) */
+  #adminPanel, #acPanel { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: #fff; 
+    z-index: 1000; 
+    flex-direction: column; 
+    padding: 25px; 
+    box-sizing: border-box; 
+    overflow-y: auto; 
+  }
   
-  /* ABAS DO PAINEL DE SERVIÇO */
   .admin-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #f1f5f9; padding: 4px; border-radius: 10px; }
   .tab-btn { flex: 1; padding: 8px; border: none; border-radius: 7px; font-size: 9px; font-weight: 800; cursor: pointer; background: transparent; color: var(--text-muted); }
   .tab-btn.active { background: #fff; color: var(--brand-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -52,7 +64,7 @@
   .admin-input { background: #f8fafc; border: 1.5px solid #e2e8f0; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; font-size: 13px; margin-bottom: 12px; outline: none; }
   label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; display: block; }
 
-  /* AC DISPLAY DESIGN FORTE */
+  /* AC DISPLAY */
   .ac-display { background: #0f172a; color: #fff; padding: 20px; border-radius: 15px; margin: 15px 0; display: flex; justify-content: space-around; border: 1px solid #1e293b; }
   .ac-unit span { display: block; font-size: 9px; color: #64748b; margin-bottom: 5px; }
   .ac-unit div { font-size: 28px; font-weight: 800; font-family: monospace; }
@@ -66,7 +78,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gaugeJS/dist/gauge.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 
 <body>
@@ -101,9 +112,8 @@
             </div>
         </div>
         <label>Intervalo E-mail (min)</label>
-        <input type="number" id="cfgTempoEmail" class="admin-input" placeholder="Ex: 10">
-        <button onclick="limpezaInteligente()" style="width:100%; background:none; border:1.5px solid var(--off); color:var(--off); padding:12px; border-radius:10px; font-size:10px; font-weight:800; cursor:pointer;">LIMPAR DADOS (+2 ANOS)</button>
-        <button onclick="testarEmail()" style="width:100%; margin-top:10px; background:#f1f5f9; color:var(--brand-primary); border:none; padding:10px; border-radius:10px; font-size:10px; font-weight:800; cursor:pointer;">ENVIAR E-MAIL TESTE</button>
+        <input type="number" id="cfgTempoEmail" class="admin-input">
+        <button onclick="limpezaInteligente()" style="width:100%; border:1.5px solid var(--off); color:var(--off); background:none; padding:12px; border-radius:10px; font-size:10px; font-weight:800; cursor:pointer;">LIMPAR DADOS (+2 ANOS)</button>
     </div>
 
     <div id="tabIR" class="tab-content">
@@ -114,7 +124,6 @@
             <button class="btn-learn" onclick="startLearn('cool')">GRAVAR COOL</button>
             <button class="btn-learn" onclick="startLearn('auto')">GRAVAR AUTO</button>
         </div>
-        <p style="font-size:9px; color:var(--text-muted); margin-top:10px;">* O ESP32 entrará em modo de escuta por 10 segundos ao clicar.</p>
     </div>
 
     <div style="margin-top: 20px; display: flex; gap: 10px;">
@@ -131,17 +140,6 @@
         <div class="ac-unit"><span>Real</span><div id="acReal">--°</div></div>
         <div style="width:1px; background:#334155; height:40px;"></div>
         <div class="ac-unit" style="color:var(--on);"><span>Alvo</span><div id="acAlvo">22°</div></div>
-    </div>
-
-    <div style="background:#f8fafc; padding:12px; border-radius:12px; margin-bottom:15px; border:1px solid #eee;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <label style="margin:0">Agendamento</label>
-            <input type="checkbox" id="schedEnable" onchange="syncSched()">
-        </div>
-        <div style="display:flex; gap:10px;">
-            <input type="time" id="sOn" class="admin-input" style="margin:0; font-size:11px;" onchange="syncSched()">
-            <input type="time" id="sOff" class="admin-input" style="margin:0; font-size:11px;" onchange="syncSched()">
-        </div>
     </div>
 
     <div class="ir-grid">
@@ -171,15 +169,13 @@
     <div class="gauge-box"><div class="g-title">Umidade</div><canvas id="gHum"></canvas><div id="humVal" class="g-value">--%</div></div>
   </div>
 
-  <div id="alertMessage"></div>
-
   <button id="btnLED" class="btn-action btn-led off">Ligar Iluminação</button>
   <button class="btn-action" style="background:var(--brand-accent); color:#fff; box-shadow: 0 4px 15px rgba(0,122,255,0.2);" onclick="abrirAC()">Controle Climatização</button>
   <button class="btn-action btn-history" onclick="window.location.href='historico.html'">Relatórios de Performance</button>
 </div>
 
 <script>
-// Inicialização Firebase (Mantida do original)
+// CONFIGURAÇÃO FIREBASE (NOVO)
 firebase.initializeApp({
    apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
    authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -188,10 +184,10 @@ firebase.initializeApp({
 });
 const db = firebase.database();
 const auth = firebase.auth();
-let config = { tMax: 30, hMax: 80, setpoint: 22, acAuto: false };
+let config = { setpoint: 22, acAuto: false };
 let gT, gH;
 
-// Navegação e Tabs
+// NAVEGAÇÃO E TABS (CORRIGIDO)
 function switchTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -200,8 +196,9 @@ function switchTab(id, btn) {
 }
 function abrirAC() { document.getElementById("acPanel").style.display = "flex"; }
 function fecharAC() { document.getElementById("acPanel").style.display = "none"; }
+function fecharAdmin() { document.getElementById("adminPanel").style.display = "none"; }
 
-// Dashboard Original
+// GAUGES
 function initGauges() {
   const opt = (col) => ({ angle: 0.15, lineWidth: 0.2, radiusScale: 0.9, pointer: { length: 0.5, strokeWidth: 0.03, color: '#1a365d' }, colorStart: col, colorStop: col, strokeColor: '#e2e8f0', generateGradient: true, highDpiSupport: true });
   gT = new Gauge(document.getElementById("gTemp")).setOptions(opt('#e11d48'));
@@ -210,7 +207,7 @@ function initGauges() {
   gH.maxValue = 100; gH.setMinValue(0); gH.set(0);
 }
 
-// Lógica de Automação e Sincronização
+// SINCRONIZAÇÃO
 auth.onAuthStateChanged(user => {
   if (user) {
     initGauges();
@@ -219,53 +216,56 @@ auth.onAuthStateChanged(user => {
             config = {...config, ...s.val()};
             document.getElementById("dispCliente").innerText = config.cliente || "--";
             document.getElementById("dispLocal").innerText = config.local || "--";
-            document.getElementById("countEmail").innerText = config.contadorAlertas || 0;
             document.getElementById("acAlvo").innerText = config.setpoint + "°";
             document.getElementById("btnAuto").innerText = config.acAuto ? "DESATIVAR AUTO" : "ATIVAR AUTOMÁTICO";
             document.getElementById("badgeAC").innerText = config.acAuto ? "MODO AUTOMÁTICO" : "MODO MANUAL";
             document.getElementById("badgeAC").style.background = config.acAuto ? "#dcfce7" : "#f1f5f9";
-            document.getElementById("schedEnable").checked = config.sched || false;
-            document.getElementById("sOn").value = config.timeOn || "08:00";
-            document.getElementById("sOff").value = config.timeOff || "18:00";
         }
     });
 
     db.ref("/temp").on("value", s => {
-        const v = parseFloat(s.val()); gT.set(v);
+        const v = parseFloat(s.val()) || 0; gT.set(v);
         document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
         document.getElementById("acReal").innerText = v.toFixed(0) + "°";
-        if(config.acAuto && v > config.setpoint) sendIR('cool');
     });
-    db.ref("/hum").on("value", s => { gH.set(parseFloat(s.val())); document.getElementById("humVal").innerText = s.val() + "%"; });
+    db.ref("/hum").on("value", s => { gH.set(parseFloat(s.val()) || 0); document.getElementById("humVal").innerText = s.val() + "%"; });
     db.ref("/led").on("value", s => {
         const b = document.getElementById("btnLED");
-        b.innerText = s.val() == 1 ? "Luz Ligada" : "Ligar Iluminação";
-        b.className = "btn-action btn-led " + (s.val() == 1 ? "on" : "off");
+        const isOn = s.val() == 1;
+        b.innerText = isOn ? "Luz Ligada" : "Ligar Iluminação";
+        b.className = "btn-action btn-led " + (isOn ? "on" : "off");
     });
   } else { window.location.replace("index.html"); }
 });
 
-// Funções de Manutenção e IR
+// FUNÇÕES DE COMANDO
 function salvarConfig() {
     db.ref("/config_alertas").update({
         cliente: document.getElementById("cfgCliente").value,
         local: document.getElementById("cfgLocal").value,
         tMax: parseFloat(document.getElementById("tMax").value),
         hMax: parseFloat(document.getElementById("hMax").value),
-        emailDestino: document.getElementById("cfgEmail").value,
-        tempoEmail: (parseFloat(document.getElementById("cfgTempoEmail").value) || 10) * 60000
-    }).then(() => fecharAdmin());
+        emailDestino: document.getElementById("cfgEmail").value
+    }).then(() => { alert("Configurações Salvas!"); fecharAdmin(); });
 }
 
-function sendIR(cmd) { db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); }
-function startLearn(f) { db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() }); alert("Modo Escuta Ativado para: " + f); }
+function startLearn(f) { 
+    db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() }); 
+    alert("MODO GRAVAÇÃO: Aponte o controle para o sensor e aperte " + f.toUpperCase()); 
+}
+
+function sendIR(cmd) { 
+    db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); 
+    const badge = document.getElementById("badgeAC");
+    badge.innerText = "ENVIANDO...";
+    setTimeout(() => badge.innerText = config.acAuto ? "MODO AUTOMÁTICO" : "MODO MANUAL", 1500);
+}
+
 function ajustarSetpoint(v) { db.ref("/config_alertas/setpoint").set(config.setpoint + v); }
 function toggleAuto() { db.ref("/config_alertas/acAuto").set(!config.acAuto); }
-function syncSched() { db.ref("/config_alertas").update({ sched: document.getElementById("schedEnable").checked, timeOn: document.getElementById("sOn").value, timeOff: document.getElementById("sOff").value }); }
-function zerarContador() { db.ref("/config_alertas/contadorAlertas").set(0); }
 function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
-// Ativação Painel Invisível (5 Cliques)
+// ATIVAÇÃO PAINEL INVISÍVEL
 let cliques = 0;
 document.getElementById("logoAdmin").onclick = () => { if(++cliques >= 5) { document.getElementById("adminPanel").style.display = "flex"; cliques = 0; } };
 document.getElementById("btnLED").onclick = () => { db.ref("/led").set(document.getElementById("btnLED").classList.contains('off') ? 1 : 0); };
