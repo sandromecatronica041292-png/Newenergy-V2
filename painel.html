@@ -104,6 +104,8 @@
             <button class="btn-learn" onclick="startLearn('off')">GRAVAR OFF</button>
             <button class="btn-learn" onclick="startLearn('cool')">GRAVAR COOL</button>
             <button class="btn-learn" onclick="startLearn('auto')">GRAVAR AUTO</button>
+            <button class="btn-learn" style="border-style: solid;" onclick="startLearn('temp_up')">GRAVAR + TEMP</button>
+            <button class="btn-learn" style="border-style: solid;" onclick="startLearn('temp_down')">GRAVAR - TEMP</button>
         </div>
     </div>
 
@@ -156,7 +158,6 @@
 </div>
 
 <script>
-// CREDENCIAIS ATUALIZADAS (controle-led-esp-oficial)
 firebase.initializeApp({
   apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
   authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -169,7 +170,6 @@ const auth = firebase.auth();
 let config = { tMax: 30, hMax: 80, setpoint: 22, acAuto: false };
 let gT, gH;
 
-// NAVEGAÇÃO
 function switchTab(id, btn) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -180,7 +180,6 @@ function abrirAC() { document.getElementById("acPanel").style.display = "flex"; 
 function fecharAC() { document.getElementById("acPanel").style.display = "none"; }
 function fecharAdmin() { document.getElementById("adminPanel").style.display = "none"; }
 
-// GAUGES
 function initGauges() {
   const opt = (col) => ({ angle: 0.15, lineWidth: 0.2, radiusScale: 0.9, pointer: { length: 0.5, strokeWidth: 0.03, color: '#1a365d' }, colorStart: col, colorStop: col, strokeColor: '#e2e8f0', generateGradient: true, highDpiSupport: true });
   gT = new Gauge(document.getElementById("gTemp")).setOptions(opt('#e11d48'));
@@ -189,7 +188,6 @@ function initGauges() {
   gH.maxValue = 100; gH.setMinValue(0); gH.set(0);
 }
 
-// SINCRONIZAÇÃO FIREBASE
 auth.onAuthStateChanged(user => {
   if (user) {
     initGauges();
@@ -205,7 +203,6 @@ auth.onAuthStateChanged(user => {
             document.getElementById("badgeAC").innerText = config.acAuto ? "MODO AUTOMÁTICO" : "MODO MANUAL";
             document.getElementById("badgeAC").style.background = config.acAuto ? "#dcfce7" : "#f1f5f9";
             
-            // PREENCHIMENTO AUTOMÁTICO DOS INPUTS (CORREÇÃO PARA SALVAR)
             document.getElementById("cfgCliente").value = config.cliente || "";
             document.getElementById("cfgLocal").value = config.local || "";
             document.getElementById("tMax").value = config.tMax || "";
@@ -238,7 +235,6 @@ auth.onAuthStateChanged(user => {
   } else { window.location.replace("index.html"); }
 });
 
-// AÇÕES DE SALVAMENTO (CORRIGIDO)
 function salvarConfig() {
     const novosDados = {
         cliente: document.getElementById("cfgCliente").value,
@@ -248,23 +244,28 @@ function salvarConfig() {
         emailDestino: document.getElementById("cfgEmail").value,
         tempoEmail: (parseFloat(document.getElementById("cfgTempoEmail").value) || 10) * 60000
     };
-
-    db.ref("/config_alertas").update(novosDados)
-    .then(() => { 
-        alert("Configurações atualizadas!"); 
-        fecharAdmin(); 
-    })
-    .catch(e => alert("Erro ao salvar: " + e.message));
+    db.ref("/config_alertas").update(novosDados).then(() => { alert("Sucesso!"); fecharAdmin(); });
 }
 
+// LÓGICA DE INFRAVERMELHO INTEGRADA
 function sendIR(cmd) { db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); }
-function startLearn(f) { db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() }); alert("Sensor em escuta para: " + f); }
-function ajustarSetpoint(v) { db.ref("/config_alertas/setpoint").set((config.setpoint || 22) + v); }
+
+function startLearn(f) { 
+    db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() }); 
+    alert("ESP32 aguardando sinal para: " + f); 
+}
+
+function ajustarSetpoint(v) { 
+    const novo = (config.setpoint || 22) + v;
+    db.ref("/config_alertas/setpoint").set(novo); 
+    // Dispara o sinal IR correspondente que você gravou
+    sendIR(v > 0 ? 'temp_up' : 'temp_down');
+}
+
 function toggleAuto() { db.ref("/config_alertas/acAuto").set(!config.acAuto); }
 function zerarContador() { db.ref("/config_alertas/contadorAlertas").set(0); }
 function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
-// ACESSO ENGENHARIA (LOGO)
 let cliques = 0;
 document.getElementById("logoAdmin").onclick = () => { if(++cliques >= 5) { document.getElementById("adminPanel").style.display = "flex"; cliques = 0; } };
 document.getElementById("btnLED").onclick = () => { db.ref("/led").set(document.getElementById("btnLED").classList.contains('off') ? 1 : 0); };
