@@ -12,188 +12,219 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        :root { --panorama-blue: #0a1d37; --panorama-accent: #0056b3; }
+        body { font-family: 'Inter', sans-serif; background-color: #f4f7fa; color: #333; }
+        .bg-panorama { background-color: var(--panorama-blue); }
+        .text-panorama { color: var(--panorama-blue); }
         
-        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); }
-        
-        /* Animação para os Modais */
-        .modal-animate { animation: modalPop 0.25s ease-out; }
-        @keyframes modalPop {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
+        .card-premium { 
+            background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0;
+            transition: all 0.4s ease;
         }
+        .card-premium:hover { transform: translateY(-3px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
 
-        /* Esconder scrollbar mantendo funcionalidade */
+        .modal-blur { backdrop-filter: blur(8px); background: rgba(10, 29, 55, 0.5); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Efeito de brilho para LED ligado */
-        .led-active { box-shadow: 0 0 15px rgba(251, 191, 36, 0.4); }
+
+        /* Animação de Pulsar para o LED quando ativo */
+        .led-glow { box-shadow: 0 0 20px rgba(245, 158, 11, 0.3); }
     </style>
 </head>
-<body class="text-slate-900">
+<body>
 
-    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3 cursor-pointer" id="logoAdmin">
-                <div class="w-9 h-9 bg-slate-900 rounded-xl flex items-center justify-center text-white font-bold tracking-tighter">NE</div>
-                <h1 class="font-extrabold text-xl tracking-tight text-slate-800">NewEnergy</h1>
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4 cursor-pointer" id="logoAdmin">
+                <div class="w-10 h-10 bg-panorama flex items-center justify-center rounded-lg text-white shadow-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-xl tracking-tight text-panorama leading-none">NewEnergy</h1>
+                    <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400">Control & Monitoring</p>
+                </div>
             </div>
             
-            <div class="flex items-center gap-4">
-                <div class="hidden sm:flex items-center gap-2 px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[11px] font-bold border border-emerald-100">
-                    <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span> ONLINE
+            <div class="flex items-center gap-6">
+                <div class="hidden md:flex flex-col items-end border-r pr-6 border-slate-200">
+                    <span id="dispCliente" class="text-sm font-bold text-slate-700">Carregando...</span>
+                    <span id="dispLocal" class="text-xs text-slate-400">Local não definido</span>
                 </div>
-                <button onclick="fazerLogout()" class="text-xs font-bold text-slate-400 hover:text-red-500 transition">SAIR</button>
+                <button onclick="fazerLogout()" class="text-xs font-bold text-rose-500 hover:text-rose-700 transition">SAIR</button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-4 py-8">
+    <main class="max-w-7xl mx-auto px-6 py-10">
         
-        <div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-            <div>
-                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Painel de Monitoramento</p>
-                <h2 id="dispCliente" class="text-4xl font-black text-slate-900 uppercase leading-none mb-2">Carregando...</h2>
-                <div class="flex items-center gap-2 text-slate-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    <span id="dispLocal" class="text-sm font-medium">--</span>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <div class="card-premium p-10 flex items-center justify-between relative overflow-hidden">
+                <div class="z-10">
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-2">Temperatura Ambiente</p>
+                    <h2 id="tempVal" class="text-7xl font-black text-panorama tracking-tighter">--°C</h2>
                 </div>
+                <div class="h-1.5 w-full bg-slate-100 absolute bottom-0 left-0">
+                    <div id="tempBar" class="h-full bg-blue-600 transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <svg class="w-24 h-24 absolute -right-4 text-slate-50 opacity-50" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a2 2 0 00-2 2v1h4V4a2 2 0 00-2-2zM5 7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2V9a2 2 0 00-2-2H5z"></path></svg>
             </div>
 
-            <div class="flex gap-3 w-full md:w-auto">
-                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 flex-1 md:w-36">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Temperatura</p>
-                    <p id="tempVal" class="text-2xl font-black text-slate-800 tracking-tighter">--°C</p>
+            <div class="card-premium p-10 flex items-center justify-between relative overflow-hidden">
+                <div class="z-10">
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-2">Umidade do Ar</p>
+                    <h2 id="humVal" class="text-7xl font-black text-panorama tracking-tighter">--%</h2>
                 </div>
-                <div class="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 flex-1 md:w-36">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Umidade</p>
-                    <p id="humVal" class="text-2xl font-black text-slate-800 tracking-tighter">--%</p>
+                <div class="h-1.5 w-full bg-slate-100 absolute bottom-0 left-0">
+                    <div id="humBar" class="h-full bg-cyan-500 transition-all duration-1000" style="width: 0%"></div>
                 </div>
+                <svg class="w-24 h-24 absolute -right-4 text-slate-50 opacity-50" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"></path></svg>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            <div id="cardLED" class="card-hover bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between h-64">
+            <div class="card-premium p-6 flex flex-col justify-between aspect-square">
                 <div class="flex justify-between items-start">
-                    <div id="iconLED" class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl transition-colors">💡</div>
-                    <div id="statusDotLED" class="w-3 h-3 rounded-full bg-slate-200"></div>
-                </div>
-                <div>
-                    <h3 class="font-bold text-xl text-slate-800">Iluminação</h3>
-                    <p class="text-sm text-slate-400 mb-6">Controle de Relé Principal</p>
-                    <button id="btnLED" class="w-full py-4 rounded-2xl font-bold text-sm transition-all bg-slate-100 text-slate-600">CARREGANDO...</button>
-                </div>
-            </div>
-
-            <div onclick="abrirModal('acModal')" class="card-hover bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between h-64 cursor-pointer group">
-                <div class="flex justify-between items-start">
-                    <div class="w-14 h-14 bg-blue-50 group-hover:bg-blue-600 group-hover:text-white rounded-2xl flex items-center justify-center text-3xl transition-all">❄️</div>
-                    <span id="badgeAC" class="text-[10px] font-black px-3 py-1 rounded-full bg-slate-100 text-slate-500 tracking-widest uppercase">Manual</span>
-                </div>
-                <div>
-                    <h3 class="font-bold text-xl text-slate-800">Climatização</h3>
-                    <p class="text-sm text-slate-400 mb-6 font-medium">Controle via Infravermelho</p>
-                    <div class="flex items-baseline gap-2">
-                        <span id="acAlvoDisplay" class="text-3xl font-black text-slate-800 tracking-tighter">--°</span>
-                        <span class="text-[10px] font-bold text-slate-400 uppercase">Setpoint</span>
+                    <div id="ledIconBox" class="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center transition-all">
+                        <span id="ledEmoji" class="text-2xl">💡</span>
                     </div>
+                    <div id="ledStatusDot" class="w-3 h-3 rounded-full bg-slate-200"></div>
                 </div>
-            </div>
-
-            <div onclick="window.location.href='historico.html'" class="card-hover bg-slate-900 p-8 rounded-[32px] shadow-xl flex flex-col justify-between h-64 cursor-pointer relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 opacity-10 text-9xl">📊</div>
-                <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center text-3xl">📈</div>
                 <div>
-                    <h3 class="font-bold text-xl text-white">Performance</h3>
-                    <p class="text-sm text-slate-400 mb-6">Relatórios e Histórico</p>
-                    <span class="text-blue-400 text-xs font-bold tracking-widest uppercase">Acessar Banco de Dados →</span>
+                    <h4 class="font-bold text-slate-800">Iluminação</h4>
+                    <p class="text-[11px] text-slate-400 mb-4 uppercase font-semibold">Relé Digital</p>
+                    <button id="btnLED" onclick="toggleLED()" class="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-slate-800 transition shadow-lg">CARREGANDO</button>
                 </div>
             </div>
 
+            <div onclick="abrirModal('acModal')" class="card-premium p-6 flex flex-col justify-between aspect-square cursor-pointer group">
+                <div class="flex justify-between items-start">
+                    <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    </div>
+                    <span id="badgeAC" class="px-3 py-1 bg-slate-100 text-[9px] font-black rounded-full uppercase tracking-tighter">Manual</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 leading-tight">Climatização</h4>
+                    <div class="text-2xl font-black text-panorama mt-1" id="acAlvoDisplay">--°</div>
+                </div>
+            </div>
+
+            <div onclick="abrirModal('tvModal')" class="card-premium p-6 flex flex-col justify-between aspect-square cursor-pointer group">
+                <div class="flex justify-between items-start">
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 4V2M17 4V2M3 8h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg>
+                    </div>
+                    <span class="px-3 py-1 bg-indigo-100 text-indigo-600 text-[9px] font-black rounded-full uppercase">TV Smart</span>
+                </div>
+                <div>
+                    <h4 class="font-bold text-slate-800 leading-tight">Entretenimento</h4>
+                    <p class="text-[11px] text-indigo-500 font-bold mt-1">ABRIR CONTROLE</p>
+                </div>
+            </div>
+
+            <div onclick="window.location.href='historico.html'" class="card-premium p-6 flex flex-col justify-between aspect-square cursor-pointer bg-panorama border-none shadow-xl">
+                <div class="w-12 h-12 bg-white/10 text-white rounded-2xl flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2"></path></svg>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white leading-tight text-lg">Performance</h4>
+                    <p class="text-blue-300 text-xs mt-1">Ver Banco de Dados →</p>
+                </div>
+            </div>
         </div>
     </main>
 
-    <div id="acModal" class="hidden fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="modal-animate bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-2xl font-black text-slate-800">Ar Condicionado</h2>
-                    <button onclick="fecharModal('acModal')" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-full hover:text-slate-600 transition text-2xl">✕</button>
+    <div id="acModal" class="hidden fixed inset-0 z-[60] modal-blur flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden">
+            <div class="bg-panorama p-10 text-center relative">
+                <button onclick="fecharModal('acModal')" class="absolute right-8 top-8 text-white/50 hover:text-white">✕</button>
+                <p class="text-blue-300 text-[10px] font-bold uppercase tracking-widest mb-6">Ajuste de Setpoint</p>
+                <div class="flex justify-center items-center gap-8">
+                    <button onclick="ajustarSetpoint(-1)" class="w-14 h-14 rounded-full border border-white/20 text-white text-3xl hover:bg-white/10 transition">−</button>
+                    <span id="acModalTemp" class="text-7xl font-light text-white w-32 tabular-nums">--°</span>
+                    <button onclick="ajustarSetpoint(1)" class="w-14 h-14 rounded-full border border-white/20 text-white text-3xl hover:bg-white/10 transition">+</button>
                 </div>
+            </div>
+            <div class="p-8 grid grid-cols-2 gap-4">
+                <button onclick="sendIR('ac_on')" class="py-5 bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase shadow-lg shadow-emerald-100 transition active:scale-95">Ligar</button>
+                <button onclick="sendIR('ac_off')" class="py-5 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase shadow-lg shadow-rose-100 transition active:scale-95">Desligar</button>
+                <button id="btnAuto" onclick="toggleAuto()" class="col-span-2 py-4 border-2 border-slate-100 rounded-2xl font-bold text-slate-400 text-[11px] uppercase tracking-widest">Ativar Modo Automático</button>
+            </div>
+        </div>
+    </div>
 
-                <div class="bg-slate-950 rounded-[32px] p-10 text-center mb-8 shadow-inner relative">
-                    <p class="text-slate-600 text-[10px] font-bold uppercase tracking-widest mb-2">Temperatura Desejada</p>
-                    <div class="flex justify-center items-center gap-8">
-                        <button onclick="ajustarSetpoint(-1)" class="w-14 h-14 rounded-full bg-slate-900 text-white text-3xl font-light hover:bg-slate-800 transition active:scale-90">−</button>
-                        <div id="acModalTemp" class="text-7xl font-extralight text-white font-mono tracking-tighter">--°</div>
-                        <button onclick="ajustarSetpoint(1)" class="w-14 h-14 rounded-full bg-slate-900 text-white text-3xl font-light hover:bg-slate-800 transition active:scale-90">+</button>
-                    </div>
+    <div id="tvModal" class="hidden fixed inset-0 z-[60] modal-blur flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="font-black text-panorama tracking-tighter text-xl">CONTROLE TV</h3>
+                <button onclick="fecharModal('tvModal')" class="text-slate-300 hover:text-panorama">✕</button>
+            </div>
+            
+            <div class="flex justify-center mb-10">
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="col-start-2"><button onclick="sendIR('tv_up')" class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center font-bold shadow-sm active:bg-slate-200">▲</button></div>
+                    <button onclick="sendIR('tv_left')" class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center font-bold shadow-sm active:bg-slate-200">◀</button>
+                    <button onclick="sendIR('tv_ok')" class="w-14 h-14 bg-panorama text-white rounded-2xl flex items-center justify-center font-black shadow-lg active:scale-95">OK</button>
+                    <button onclick="sendIR('tv_right')" class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center font-bold shadow-sm active:bg-slate-200">▶</button>
+                    <div class="col-start-2"><button onclick="sendIR('tv_down')" class="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center font-bold shadow-sm active:bg-slate-200">▼</button></div>
                 </div>
+            </div>
 
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <button onclick="sendIR('on')" class="py-5 bg-emerald-500 text-white rounded-3xl font-black text-sm shadow-lg shadow-emerald-200 active:scale-95 transition-all">LIGAR</button>
-                    <button onclick="sendIR('off')" class="py-5 bg-red-500 text-white rounded-3xl font-black text-sm shadow-lg shadow-red-200 active:scale-95 transition-all">DESLIGAR</button>
-                </div>
-                
-                <button id="btnAuto" onclick="toggleAuto()" class="w-full py-5 border-2 border-slate-100 rounded-3xl font-bold text-slate-500 hover:bg-slate-50 transition-all text-sm uppercase tracking-widest">
-                    Ativar Automático
-                </button>
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="sendIR('tv_power')" class="py-4 bg-rose-600 text-white rounded-2xl font-bold text-[11px] uppercase shadow-lg shadow-rose-100">Power</button>
+                <button onclick="sendIR('tv_mute')" class="py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold text-[11px] uppercase">Mute</button>
+                <button onclick="sendIR('tv_vol_up')" class="py-4 bg-slate-900 text-white rounded-2xl font-bold text-[11px] uppercase">Volume +</button>
+                <button onclick="sendIR('tv_vol_down')" class="py-4 bg-slate-900 text-white rounded-2xl font-bold text-[11px] uppercase">Volume -</button>
             </div>
         </div>
     </div>
 
     <div id="adminModal" class="hidden fixed inset-0 z-[70] bg-white flex flex-col">
-        <header class="p-6 border-b border-slate-100 flex justify-between items-center">
-            <h2 class="font-black text-slate-800 tracking-tight">ENGENHARIA DE SERVIÇO</h2>
-            <button onclick="fecharModal('adminModal')" class="px-6 py-2 bg-slate-900 text-white rounded-full font-bold text-[10px] uppercase">Sair</button>
+        <header class="h-24 border-b border-slate-100 px-10 flex items-center justify-between bg-slate-50">
+            <div>
+                <h2 class="font-black text-panorama uppercase tracking-tighter text-2xl leading-none">Engenharia</h2>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Captura e Diagnóstico</p>
+            </div>
+            <button onclick="fecharModal('adminModal')" class="px-8 py-3 bg-panorama text-white rounded-full font-bold text-xs">SAIR DO MODO ADMIN</button>
         </header>
         
-        <div class="flex-1 overflow-y-auto p-6 no-scrollbar">
-            <div class="max-w-2xl mx-auto space-y-10">
+        <div class="flex-1 p-10 overflow-y-auto no-scrollbar">
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
                 
-                <section class="space-y-4">
-                    <h3 class="text-xs font-black text-blue-600 uppercase tracking-widest">Configurações Base</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-6">
+                    <h3 class="font-black text-blue-600 uppercase text-xs tracking-widest">Configurações Gerais</h3>
+                    <input type="text" id="cfgCliente" placeholder="Nome do Cliente" class="w-full p-5 bg-slate-50 rounded-2xl border border-slate-100 outline-none focus:border-blue-500 transition-all">
+                    <input type="text" id="cfgLocal" placeholder="Localização" class="w-full p-5 bg-slate-50 rounded-2xl border border-slate-100 outline-none focus:border-blue-500 transition-all">
+                    
+                    <div class="bg-rose-50 p-6 rounded-[2rem] flex justify-between items-center border border-rose-100">
                         <div>
-                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Cliente</label>
-                            <input type="text" id="cfgCliente" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 ring-blue-100">
+                            <p class="text-rose-600 font-black text-3xl leading-none" id="countEmailDisplay">0</p>
+                            <p class="text-[10px] text-rose-400 font-bold uppercase mt-2">Alertas de E-mail</p>
                         </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Local</label>
-                            <input type="text" id="cfgLocal" class="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:ring-2 ring-blue-100">
-                        </div>
+                        <button onclick="zerarContador()" class="px-6 py-2 bg-rose-600 text-white rounded-full text-[10px] font-bold">ZERAR</button>
                     </div>
-                </section>
+                </div>
 
-                <section class="space-y-4">
-                    <h3 class="text-xs font-black text-blue-600 uppercase tracking-widest">Laboratório IR (Captura)</h3>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        <button onclick="startLearn('on')" class="p-4 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR ON</button>
-                        <button onclick="startLearn('off')" class="p-4 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR OFF</button>
-                        <button onclick="startLearn('cool')" class="p-4 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR COOL</button>
-                        <button onclick="startLearn('temp_up')" class="p-4 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR TEMP+</button>
-                        <button onclick="startLearn('temp_down')" class="p-4 bg-slate-50 border border-slate-100 rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR TEMP-</button>
+                <div class="space-y-6">
+                    <h3 class="font-black text-indigo-600 uppercase text-xs tracking-widest">Laboratório IR (Captura)</h3>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="startLearn('ac_on')" class="p-4 bg-slate-50 border rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR AC ON</button>
+                        <button onclick="startLearn('ac_off')" class="p-4 bg-slate-50 border rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR AC OFF</button>
+                        <button onclick="startLearn('tv_power')" class="p-4 bg-slate-50 border rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR TV POWER</button>
+                        <button onclick="startLearn('tv_vol_up')" class="p-4 bg-slate-50 border rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR TV VOL+</button>
+                        <button onclick="startLearn('tv_ok')" class="p-4 bg-slate-50 border rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR TV OK</button>
+                        <button onclick="startLearn('tv_up')" class="p-4 bg-slate-50 border rounded-xl text-[10px] font-bold hover:bg-slate-100">GRAVAR TV SETA ▲</button>
                     </div>
-                </section>
+                    <p class="text-[10px] text-slate-400 italic text-center">* Aponte o controle para o ESP32 após clicar.</p>
+                </div>
 
-                <section class="bg-slate-900 rounded-[32px] p-8 text-white">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xs font-bold uppercase tracking-widest">Log de Alertas</h3>
-                        <button onclick="zerarContador()" class="text-[10px] bg-red-500/20 text-red-400 px-3 py-1 rounded-full font-bold">ZERAR</button>
-                    </div>
-                    <p class="text-4xl font-black mb-1" id="countEmailDisplay">0</p>
-                    <p class="text-slate-400 text-xs font-medium">E-mails de alerta disparados nesta sessão</p>
-                </section>
-
-                <button onclick="salvarConfig()" class="w-full py-5 bg-blue-600 text-white rounded-3xl font-black shadow-xl shadow-blue-100 active:scale-95 transition-all">SALVAR ALTERAÇÕES</button>
+                <button onclick="salvarConfig()" class="md:col-span-2 py-6 bg-emerald-600 text-white rounded-[2rem] font-black uppercase tracking-[0.2em] shadow-xl hover:bg-emerald-700 transition">Salvar Todas as Configurações</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Inicialização Firebase (Dados do seu sistema)
+        // CONFIGURAÇÃO FIREBASE
         firebase.initializeApp({
             apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
             authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -203,126 +234,117 @@
 
         const db = firebase.database();
         const auth = firebase.auth();
-        let config = { tMax: 30, hMax: 80, setpoint: 22, acAuto: false };
+        let config = { setpoint: 22, acAuto: false };
 
-        // Controle de Modais
-        function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+        // UTILS
+        const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
+        const fecharModal = (id) => document.getElementById(id).classList.add('hidden');
 
-        // Sincronização em Tempo Real
+        // SYNC REALTIME
         auth.onAuthStateChanged(user => {
-            if (user) {
-                // Monitorar Configurações
-                db.ref("/config_alertas").on("value", s => {
-                    const val = s.val();
-                    if(val) {
-                        config = {...config, ...val};
-                        document.getElementById("dispCliente").innerText = config.cliente || "Novo Cliente";
-                        document.getElementById("dispLocal").innerText = config.local || "Localização";
-                        document.getElementById("acAlvoDisplay").innerText = (config.setpoint || 22) + "°";
-                        document.getElementById("acModalTemp").innerText = (config.setpoint || 22) + "°";
-                        document.getElementById("countEmailDisplay").innerText = config.contadorAlertas || 0;
-                        
-                        // Atualizar Modos AC
-                        const badge = document.getElementById("badgeAC");
-                        const btnAuto = document.getElementById("btnAuto");
-                        if(config.acAuto) {
-                            badge.innerText = "Automático";
-                            badge.className = "text-[10px] font-black px-3 py-1 rounded-full bg-emerald-100 text-emerald-600 tracking-widest uppercase border border-emerald-200";
-                            btnAuto.innerText = "Desativar Automático";
-                            btnAuto.className = "w-full py-5 bg-emerald-50 text-emerald-600 rounded-3xl font-bold transition-all text-sm uppercase tracking-widest border border-emerald-100";
-                        } else {
-                            badge.innerText = "Manual";
-                            badge.className = "text-[10px] font-black px-3 py-1 rounded-full bg-slate-100 text-slate-500 tracking-widest uppercase border border-slate-200";
-                            btnAuto.innerText = "Ativar Automático";
-                            btnAuto.className = "w-full py-5 border-2 border-slate-100 rounded-3xl font-bold text-slate-500 hover:bg-slate-50 transition-all text-sm uppercase tracking-widest";
-                        }
+            if (!user) { window.location.replace("index.html"); return; }
 
-                        // Preencher Campos Admin
-                        document.getElementById("cfgCliente").value = config.cliente || "";
-                        document.getElementById("cfgLocal").value = config.local || "";
-                    }
-                });
+            // 1. Configurações e UI
+            db.ref("/config_alertas").on("value", s => {
+                const val = s.val() || {};
+                config = {...config, ...val};
+                document.getElementById("dispCliente").innerText = val.cliente || "Novo Cliente";
+                document.getElementById("dispLocal").innerText = val.local || "Não definido";
+                document.getElementById("acAlvoDisplay").innerText = (val.setpoint || 22) + "°";
+                document.getElementById("acModalTemp").innerText = (val.setpoint || 22) + "°";
+                document.getElementById("countEmailDisplay").innerText = val.contadorAlertas || 0;
+                
+                // Botão Auto AC
+                const btnAuto = document.getElementById("btnAuto");
+                const badgeAC = document.getElementById("badgeAC");
+                if(val.acAuto) {
+                    btnAuto.innerText = "Modo Automático: ATIVO";
+                    btnAuto.className = "col-span-2 py-4 bg-blue-50 border-2 border-blue-200 rounded-2xl font-bold text-blue-600 text-[11px] uppercase tracking-widest";
+                    badgeAC.innerText = "Automático";
+                    badgeAC.className = "px-3 py-1 bg-emerald-100 text-emerald-600 text-[9px] font-black rounded-full uppercase tracking-tighter";
+                } else {
+                    btnAuto.innerText = "Ativar Modo Automático";
+                    btnAuto.className = "col-span-2 py-4 border-2 border-slate-100 rounded-2xl font-bold text-slate-400 text-[11px] uppercase tracking-widest";
+                    badgeAC.innerText = "Manual";
+                    badgeAC.className = "px-3 py-1 bg-slate-100 text-slate-400 text-[9px] font-black rounded-full uppercase tracking-tighter";
+                }
+            });
 
-                // Monitorar Sensores
-                db.ref("/temp").on("value", s => {
-                    const v = parseFloat(s.val()) || 0;
-                    document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
-                    if(config.acAuto && v > config.setpoint) sendIR('cool');
-                });
+            // 2. Sensores (Temperatura e Umidade)
+            db.ref("/temp").on("value", s => {
+                const v = parseFloat(s.val()) || 0;
+                document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
+                document.getElementById("tempBar").style.width = Math.min((v / 50) * 100, 100) + "%";
+            });
 
-                db.ref("/hum").on("value", s => {
-                    document.getElementById("humVal").innerText = (parseFloat(s.val()) || 0).toFixed(0) + "%";
-                });
+            db.ref("/hum").on("value", s => {
+                const v = parseFloat(s.val()) || 0;
+                document.getElementById("humVal").innerText = v.toFixed(0) + "%";
+                document.getElementById("humBar").style.width = v + "%";
+            });
 
-                // Monitorar LED
-                db.ref("/led").on("value", s => {
-                    const btn = document.getElementById("btnLED");
-                    const icon = document.getElementById("iconLED");
-                    const dot = document.getElementById("statusDotLED");
-                    const ligado = s.val() == 1;
+            // 3. LED (Lógica de feedback robusta)
+            db.ref("/led").on("value", s => {
+                const estado = s.val();
+                const btn = document.getElementById("btnLED");
+                const iconBox = document.getElementById("ledIconBox");
+                const dot = document.getElementById("ledStatusDot");
+                const emoji = document.getElementById("ledEmoji");
 
-                    if(ligado) {
-                        btn.innerText = "DESLIGAR";
-                        btn.className = "w-full py-4 rounded-2xl font-bold text-sm transition-all bg-slate-900 text-white shadow-xl shadow-slate-200";
-                        icon.className = "w-14 h-14 bg-amber-400 text-white rounded-2xl flex items-center justify-center text-3xl led-active transition-all";
-                        dot.className = "w-3 h-3 rounded-full bg-amber-500 animate-pulse";
-                    } else {
-                        btn.innerText = "LIGAR AGORA";
-                        btn.className = "w-full py-4 rounded-2xl font-bold text-sm transition-all bg-slate-100 text-slate-600 hover:bg-slate-200";
-                        icon.className = "w-14 h-14 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center text-3xl transition-all";
-                        dot.className = "w-3 h-3 rounded-full bg-slate-200";
-                    }
-                });
-
-            } else { window.location.replace("index.html"); }
+                if(estado == 1) {
+                    btn.innerText = "DESLIGAR";
+                    btn.className = "w-full py-4 bg-amber-500 text-white rounded-xl font-bold text-xs transition shadow-lg shadow-amber-100";
+                    iconBox.className = "w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center transition-all led-glow";
+                    dot.className = "w-3 h-3 rounded-full bg-amber-500 animate-pulse";
+                    emoji.innerText = "💡";
+                } else {
+                    btn.innerText = "LIGAR";
+                    btn.className = "w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-xs transition";
+                    iconBox.className = "w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center transition-all";
+                    dot.className = "w-3 h-3 rounded-full bg-slate-200";
+                    emoji.innerText = "⚫";
+                }
+            });
         });
 
-        // Funções de Controle (Comando)
-        function sendIR(cmd) { db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); }
-        
-        function toggleAuto() { db.ref("/config_alertas/acAuto").set(!config.acAuto); }
-        
-        function ajustarSetpoint(v) { 
-            const novo = (config.setpoint || 22) + v;
-            db.ref("/config_alertas/setpoint").set(novo);
-            sendIR(v > 0 ? 'temp_up' : 'temp_down');
-        }
-
+        // FUNÇÕES DE CONTROLE
         function toggleLED() {
-            const btn = document.getElementById("btnLED");
-            const novoEstado = btn.innerText.includes("LIGAR") ? 1 : 0;
-            db.ref("/led").set(novoEstado);
-        }
-
-        function salvarConfig() {
-            const novosDados = {
-                cliente: document.getElementById("cfgCliente").value,
-                local: document.getElementById("cfgLocal").value
-            };
-            db.ref("/config_alertas").update(novosDados).then(() => {
-                fecharModal('adminModal');
+            db.ref("/led").once("value").then(s => {
+                const novo = s.val() == 1 ? 0 : 1;
+                db.ref("/led").set(novo);
             });
         }
 
+        function sendIR(cmd) { 
+            db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); 
+        }
+
+        function ajustarSetpoint(v) {
+            const novo = (config.setpoint || 22) + v;
+            db.ref("/config_alertas/setpoint").set(novo);
+            sendIR(v > 0 ? 'ac_temp_up' : 'ac_temp_down');
+        }
+
+        function toggleAuto() { db.ref("/config_alertas/acAuto").set(!config.acAuto); }
+
         function startLearn(f) {
             db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() });
-            alert("Aguardando sinal IR para: " + f);
+            alert("Aguardando sinal IR para: " + f + ". Aponte o controle para o sensor.");
+        }
+
+        function salvarConfig() {
+            const cliente = document.getElementById("cfgCliente").value;
+            const local = document.getElementById("cfgLocal").value;
+            db.ref("/config_alertas").update({ cliente, local }).then(() => fecharModal('adminModal'));
         }
 
         function zerarContador() { db.ref("/config_alertas/contadorAlertas").set(0); }
-        
         function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
-        // Eventos de Interface
-        document.getElementById("btnLED").onclick = toggleLED;
-        
+        // ACESSO AO MENU ADMIN (5 CLIQUES NO LOGO)
         let secretClicks = 0;
         document.getElementById("logoAdmin").onclick = () => {
-            if(++secretClicks >= 5) {
-                abrirModal('adminModal');
-                secretClicks = 0;
-            }
+            if(++secretClicks >= 5) { secretClicks = 0; abrirModal('adminModal'); }
         };
     </script>
 </body>
