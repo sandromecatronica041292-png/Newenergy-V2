@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NewEnergy | Monitor Pro</title>
+    <title>NewEnergy | Monitor Pro Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     
@@ -14,27 +14,17 @@
 
     <style>
         :root { --navy: #002b49; --green: #00b2a9; }
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: var(--navy); }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: var(--navy); overflow-x: hidden; }
         
-        /* EFEITOS DE CLIQUE (ATIVO) */
-        .btn-active-effect:active {
-            transform: scale(0.96);
-            filter: brightness(1.2);
-            transition: all 0.1s ease;
-        }
+        .btn-active-effect:active { transform: scale(0.96); filter: brightness(1.2); transition: all 0.1s ease; }
 
         .card-premium { 
             background: white; border-radius: 1.25rem; border: 1px solid #e2e8f0;
-            transition: all 0.2s ease; cursor: grab;
-            user-select: none;
+            transition: all 0.2s ease; cursor: grab; user-select: none;
         }
-        .card-premium:active { 
-            cursor: grabbing; 
-            transform: scale(0.98);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
+        .card-premium:active { cursor: grabbing; transform: scale(0.98); box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
 
-        /* Estilo das Gauges Animadas */
+        /* Gauges */
         .gauge-container { position: relative; width: 120px; height: 65px; overflow: hidden; }
         .gauge-bg { fill: none; stroke: #f1f5f9; stroke-width: 10; }
         .gauge-fill { 
@@ -44,40 +34,44 @@
         
         .modal-blur { backdrop-filter: blur(12px); background: rgba(0, 43, 73, 0.4); }
         
-        /* Botões da TV com efeito de profundidade */
         .btn-tv { 
             @apply bg-slate-100 text-slate-700 rounded-xl font-bold text-[11px] py-3 flex items-center justify-center transition-all;
             box-shadow: 0 4px 0 #cbd5e1;
         }
-        .btn-tv:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #cbd5e1;
-            background-color: #e2e8f0;
-        }
+        .btn-tv:active { transform: translateY(3px); box-shadow: 0 1px 0 #cbd5e1; background-color: #e2e8f0; }
 
-        /* Tipografia Profissional Reduzida */
-        h2 { font-size: 1.5rem !important; font-weight: 800; }
-        h4 { font-size: 0.85rem !important; font-weight: 700; color: var(--navy); }
+        /* Painel Admin Lateral */
+        #adminDrawer {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(100%);
+        }
+        #adminDrawer.open { transform: translateX(0); }
+
         .label-tiny { font-size: 0.6rem !important; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: #64748b; }
+        .admin-input { @apply w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm mb-3 outline-none focus:border-[#00b2a9]; }
+        .btn-learn { @apply border border-dashed border-slate-300 p-2 rounded-lg text-[9px] font-bold hover:bg-slate-50 transition-all; }
     </style>
 </head>
 <body class="pb-10">
 
+    <!-- NAV PRINCIPAL -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
         <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
             <div class="flex items-center gap-3 cursor-pointer" id="logoAdmin">
                 <div class="w-7 h-7 bg-[#002b49] flex items-center justify-center rounded-lg">
                     <svg class="w-4 h-4 text-[#00b2a9]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                 </div>
-                <h1 class="font-bold text-base tracking-tight">NewEnergy</h1>
+                <div>
+                    <h1 class="font-bold text-base tracking-tight leading-none">NewEnergy</h1>
+                    <span id="headerCliente" class="text-[9px] text-slate-400 font-medium">CONECTADO</span>
+                </div>
             </div>
             <button onclick="fazerLogout()" class="text-[10px] font-black text-rose-500 btn-active-effect">SAIR</button>
         </div>
     </nav>
 
     <main class="max-w-6xl mx-auto px-6 mt-6">
-        
-        <!-- GAUGES EM CARDS MENORES -->
+        <!-- MÉTRICAS -->
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="card-premium p-4 flex flex-col items-center">
                 <span class="label-tiny mb-2">TEMPERATURA</span>
@@ -87,9 +81,8 @@
                         <path id="tempGauge" class="gauge-fill" d="M10 45 A 35 35 0 0 1 90 45" stroke-dasharray="0 126" />
                     </svg>
                 </div>
-                <h2 id="tempVal" class="mt-[-15px]">--°C</h2>
+                <h2 id="tempVal" class="text-2xl font-extrabold mt-[-15px]">--°C</h2>
             </div>
-
             <div class="card-premium p-4 flex flex-col items-center">
                 <span class="label-tiny mb-2">UMIDADE</span>
                 <div class="gauge-container">
@@ -98,14 +91,13 @@
                         <path id="humGauge" class="gauge-fill" d="M10 45 A 35 35 0 0 1 90 45" stroke-dasharray="0 126" style="stroke: #3b82f6;" />
                     </svg>
                 </div>
-                <h2 id="humVal" class="mt-[-15px]">--%</h2>
+                <h2 id="humVal" class="text-2xl font-extrabold mt-[-15px]">--%</h2>
             </div>
         </div>
 
-        <!-- PAINEL ARRASTÁVEL -->
+        <!-- DASHBOARD ARRASTÁVEL -->
         <div id="drag-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            <!-- CARD LUZ -->
+            <!-- LUZ -->
             <div class="card-premium p-5 flex flex-col justify-between aspect-square" data-id="luz">
                 <div class="flex justify-between items-start">
                     <div id="ledIconBox" class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center transition-all">
@@ -114,13 +106,13 @@
                     <div id="ledStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
                 </div>
                 <div>
-                    <h4 class="mb-1">Iluminação</h4>
+                    <h4 class="text-sm font-bold">Iluminação</h4>
                     <span class="label-tiny block mb-3">SALA PRINCIPAL</span>
-                    <button id="btnLED" onclick="toggleLED()" class="w-full py-2.5 bg-navy text-white rounded-lg font-bold text-[10px] uppercase tracking-widest btn-active-effect">CARREGANDO</button>
+                    <button id="btnLED" onclick="toggleLED()" class="w-full py-2.5 bg-navy text-white rounded-lg font-bold text-[10px] uppercase tracking-widest btn-active-effect">LIGAR</button>
                 </div>
             </div>
 
-            <!-- CARD AC -->
+            <!-- AR CONDICIONADO -->
             <div onclick="abrirModal('acModal')" class="card-premium p-5 flex flex-col justify-between aspect-square btn-active-effect" data-id="ac">
                 <div class="flex justify-between items-start">
                     <div class="w-10 h-10 bg-emerald-50 text-[#00b2a9] rounded-xl flex items-center justify-center">
@@ -129,41 +121,40 @@
                     <span id="badgeAC" class="label-tiny bg-slate-50 px-2 py-0.5 rounded-md">Manual</span>
                 </div>
                 <div>
-                    <h4>Ar Condicionado</h4>
+                    <h4 class="text-sm font-bold">Ar Condicionado</h4>
                     <div class="text-2xl font-black text-[#00b2a9] mt-1" id="acAlvoDisplay">--°</div>
                 </div>
             </div>
 
-            <!-- CARD TV -->
+            <!-- SMART TV -->
             <div onclick="abrirModal('tvModal')" class="card-premium p-5 flex flex-col justify-between aspect-square btn-active-effect" data-id="tv">
                 <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 4V2M17 4V2M3 8h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg>
                 </div>
                 <div>
-                    <h4>Smart TV</h4>
-                    <p class="text-[10px] text-blue-500 font-bold mt-1">ABRIR CONTROLE</p>
+                    <h4 class="text-sm font-bold">Smart TV Remote</h4>
+                    <p class="text-[10px] text-blue-500 font-bold mt-1 uppercase tracking-tighter">Abrir Interface</p>
                 </div>
             </div>
 
-            <!-- CARD HISTORICO -->
+            <!-- RELATÓRIOS -->
             <div onclick="window.location.href='historico.html'" class="card-premium p-5 flex flex-col justify-between aspect-square bg-[#002b49] border-none text-white btn-active-effect" data-id="data">
                 <div class="w-10 h-10 bg-white/10 text-[#00b2a9] rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2"></path></svg>
                 </div>
                 <div>
-                    <h4 class="text-white">Performance</h4>
+                    <h4 class="text-white text-sm font-bold">Performance</h4>
                     <p class="text-[10px] text-[#00b2a9] font-bold mt-1">LOGS DE DADOS</p>
                 </div>
             </div>
-
         </div>
     </main>
 
     <!-- MODAL AC -->
     <div id="acModal" class="hidden fixed inset-0 z-[60] modal-blur flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden">
             <div class="bg-[#002b49] p-8 text-center text-white">
-                <span class="label-tiny text-white/50">AJUSTE DE SETPOINT</span>
+                <span class="label-tiny text-white/50">AJUSTE DE CLIMATIZAÇÃO</span>
                 <div class="flex justify-center items-center gap-6 mt-4">
                     <button onclick="ajustarSetpoint(-1)" class="w-12 h-12 rounded-full border border-white/20 btn-active-effect">－</button>
                     <span id="acModalTemp" class="text-5xl font-light w-20">--°</span>
@@ -174,35 +165,30 @@
                 <button onclick="sendIR('ac_on')" class="py-3 bg-emerald-500 text-white rounded-xl font-bold text-[10px] btn-active-effect uppercase">Ligar</button>
                 <button onclick="sendIR('ac_off')" class="py-3 bg-rose-500 text-white rounded-xl font-bold text-[10px] btn-active-effect uppercase">Desligar</button>
                 <button id="btnAuto" onclick="toggleAuto()" class="col-span-2 py-3 border border-slate-200 rounded-xl font-bold text-slate-400 text-[10px] btn-active-effect uppercase">Modo Automático</button>
-                <button onclick="fecharModal('acModal')" class="col-span-2 py-2 text-slate-300 text-[10px] font-bold">FECHAR</button>
+                <button onclick="fecharModal('acModal')" class="col-span-2 py-2 text-slate-300 text-[10px] font-bold">VOLTAR</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL TV COMPLETO -->
+    <!-- MODAL TV -->
     <div id="tvModal" class="hidden fixed inset-0 z-[60] modal-blur flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-xs rounded-[2.5rem] shadow-2xl p-8 animate-in fade-in zoom-in duration-200">
+        <div class="bg-white w-full max-w-xs rounded-[2.5rem] shadow-2xl p-8">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="font-bold text-xs tracking-widest text-[#002b49]">TV REMOTE</h3>
                 <button onclick="fecharModal('tvModal')" class="text-slate-300 p-2">✕</button>
             </div>
-
-            <!-- D-PAD -->
             <div class="flex justify-center mb-8">
                 <div class="grid grid-cols-3 gap-2 p-4 bg-slate-50 rounded-full">
                     <div class="col-start-2"><button onclick="sendIR('tv_up')" class="btn-tv w-12 h-12">▲</button></div>
                     <button onclick="sendIR('tv_left')" class="btn-tv w-12 h-12">◀</button>
-                    <button onclick="sendIR('tv_ok')" class="w-12 h-12 bg-[#002b49] text-white rounded-xl font-black text-[10px] btn-active-effect shadow-lg">OK</button>
+                    <button onclick="sendIR('tv_ok')" class="w-12 h-12 bg-[#002b49] text-white rounded-xl font-black text-[10px] btn-active-effect">OK</button>
                     <button onclick="sendIR('tv_right')" class="btn-tv w-12 h-12">▶</button>
                     <div class="col-start-2"><button onclick="sendIR('tv_down')" class="btn-tv w-12 h-12">▼</button></div>
                 </div>
             </div>
-
-            <!-- CONTROLES ADICIONAIS -->
             <div class="grid grid-cols-2 gap-3">
-                <button onclick="sendIR('tv_power')" class="py-3 bg-rose-600 text-white rounded-xl font-bold text-[10px] btn-active-effect">POWER</button>
-                <button onclick="sendIR('tv_mute')" class="py-3 bg-slate-800 text-white rounded-xl font-bold text-[10px] btn-active-effect">MUTE</button>
-                
+                <button onclick="sendIR('tv_power')" class="py-3 bg-rose-600 text-white rounded-xl font-bold text-[10px] btn-active-effect uppercase">Power</button>
+                <button onclick="sendIR('tv_mute')" class="py-3 bg-slate-800 text-white rounded-xl font-bold text-[10px] btn-active-effect uppercase">Mute</button>
                 <div class="flex flex-col gap-2">
                     <button onclick="sendIR('tv_vol_up')" class="btn-tv">VOL +</button>
                     <button onclick="sendIR('tv_vol_down')" class="btn-tv">VOL -</button>
@@ -215,8 +201,49 @@
         </div>
     </div>
 
+    <!-- PAINEL DE ENGENHARIA (LATERAL) -->
+    <div id="adminDrawer" class="fixed top-0 right-0 h-full w-80 bg-white z-[100] shadow-2xl p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-extrabold text-navy">Engenharia</h2>
+            <button onclick="toggleAdmin()" class="text-slate-300">✕</button>
+        </div>
+
+        <div class="mb-8">
+            <h5 class="label-tiny mb-4">Configurações de Rede</h5>
+            <label class="label-tiny">Cliente</label>
+            <input type="text" id="cfgCliente" class="admin-input">
+            <label class="label-tiny">Local</label>
+            <input type="text" id="cfgLocal" class="admin-input">
+            <div class="grid grid-cols-2 gap-2">
+                <div><label class="label-tiny">Temp Max</label><input type="number" id="tMax" class="admin-input"></div>
+                <div><label class="label-tiny">Hum Max</label><input type="number" id="hMax" class="admin-input"></div>
+            </div>
+            <button onclick="salvarConfig()" class="w-full py-3 bg-[#00b2a9] text-white rounded-xl font-bold text-[10px] btn-active-effect">SALVAR PARÂMETROS</button>
+        </div>
+
+        <div class="space-y-4">
+            <h5 class="label-tiny mb-2">Laboratório de Frequências (IR)</h5>
+            <p class="text-[9px] text-slate-400 mb-4 uppercase">Clique para abrir o modo de escuta no ESP32</p>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <button class="btn-learn" onclick="startLearn('ac_on')">GRV AC ON</button>
+                <button class="btn-learn" onclick="startLearn('ac_off')">GRV AC OFF</button>
+                <button class="btn-learn" onclick="startLearn('ac_temp_up')">GRV AC +</button>
+                <button class="btn-learn" onclick="startLearn('ac_temp_down')">GRV AC -</button>
+                <button class="btn-learn" onclick="startLearn('tv_power')">GRV TV PWR</button>
+                <button class="btn-learn" onclick="startLearn('tv_ok')">GRV TV OK</button>
+                <button class="btn-learn" onclick="startLearn('tv_vol_up')">GRV TV VOL+</button>
+                <button class="btn-learn" onclick="startLearn('tv_vol_down')">GRV TV VOL-</button>
+                <button class="btn-learn" onclick="startLearn('tv_up')">GRV TV ▲</button>
+                <button class="btn-learn" onclick="startLearn('tv_down')">GRV TV ▼</button>
+                <button class="btn-learn" onclick="startLearn('tv_left')">GRV TV ◀</button>
+                <button class="btn-learn" onclick="startLearn('tv_right')">GRV TV ▶</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Configuração Firebase (Mesma do anterior)
+        // CONFIGURAÇÃO FIREBASE
         firebase.initializeApp({
             apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
             authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -228,34 +255,44 @@
         const auth = firebase.auth();
         let config = { setpoint: 22, acAuto: false };
 
-        // Animação da Gauge
+        // Gauge Logic
         function updateGauge(id, val, max) {
             const gauge = document.getElementById(id);
+            if(!gauge) return;
             const circumference = 126;
             const percentage = Math.min(val / max, 1);
             gauge.style.strokeDasharray = `${circumference * percentage} ${circumference}`;
         }
 
-        // Drag & Drop
-        Sortable.create(document.getElementById('drag-container'), {
-            animation: 150,
-            ghostClass: 'opacity-20',
-            store: {
-                set: (s) => localStorage.setItem('panel-order', JSON.stringify(s.toArray())),
-                get: () => JSON.parse(localStorage.getItem('panel-order')) || []
-            }
-        });
-
-        // Sync Realtime
+        // Realtime Sync
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.replace("index.html"); return; }
 
             db.ref("/config_alertas").on("value", s => {
                 const val = s.val() || {}; config = {...config, ...val};
+                document.getElementById("headerCliente").innerText = val.cliente || "CONECTADO";
                 document.getElementById("acAlvoDisplay").innerText = (val.setpoint || 22) + "°";
                 document.getElementById("acModalTemp").innerText = (val.setpoint || 22) + "°";
+                
+                // Preencher campos admin
+                document.getElementById("cfgCliente").value = val.cliente || "";
+                document.getElementById("cfgLocal").value = val.local || "";
+                document.getElementById("tMax").value = val.tMax || 30;
+                document.getElementById("hMax").value = val.hMax || 80;
+
                 const btnAuto = document.getElementById("btnAuto");
-                btnAuto.className = val.acAuto ? "col-span-2 py-3 bg-emerald-50 border border-emerald-200 rounded-xl font-bold text-emerald-600 text-[10px] btn-active-effect uppercase" : "col-span-2 py-3 border border-slate-200 rounded-xl font-bold text-slate-400 text-[10px] btn-active-effect uppercase";
+                const badge = document.getElementById("badgeAC");
+                if(val.acAuto) {
+                    btnAuto.className = "col-span-2 py-3 bg-emerald-50 border border-emerald-200 rounded-xl font-bold text-emerald-600 text-[10px] btn-active-effect uppercase";
+                    btnAuto.innerText = "AUTOMÁTICO ATIVO";
+                    badge.innerText = "Auto";
+                    badge.className = "label-tiny bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md";
+                } else {
+                    btnAuto.className = "col-span-2 py-3 border border-slate-200 rounded-xl font-bold text-slate-400 text-[10px] btn-active-effect uppercase";
+                    btnAuto.innerText = "MODO AUTOMÁTICO";
+                    badge.innerText = "Manual";
+                    badge.className = "label-tiny bg-slate-50 px-2 py-0.5 rounded-md";
+                }
             });
 
             db.ref("/temp").on("value", s => {
@@ -281,13 +318,55 @@
             });
         });
 
-        const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
-        const fecharModal = (id) => document.getElementById(id).classList.add('hidden');
+        // Funções de Controle
         function toggleLED() { db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); }
         function sendIR(cmd) { db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); }
-        function ajustarSetpoint(v) { db.ref("/config_alertas/setpoint").set((config.setpoint || 22) + v); }
+        function ajustarSetpoint(v) { 
+            const novo = (config.setpoint || 22) + v;
+            db.ref("/config_alertas/setpoint").set(novo); 
+            sendIR(v > 0 ? 'ac_temp_up' : 'ac_temp_down');
+        }
         function toggleAuto() { db.ref("/config_alertas/acAuto").set(!config.acAuto); }
+        
+        // ADMIN LOGIC
+        function salvarConfig() {
+            const data = {
+                cliente: document.getElementById("cfgCliente").value,
+                local: document.getElementById("cfgLocal").value,
+                tMax: parseFloat(document.getElementById("tMax").value),
+                hMax: parseFloat(document.getElementById("hMax").value)
+            };
+            db.ref("/config_alertas").update(data).then(() => alert("Configurações Salvas!"));
+        }
+
+        function startLearn(f) {
+            db.ref("/ir_system/learn").set({ active: true, function: f, ts: Date.now() });
+            alert("ESP32 em modo de escuta para: " + f);
+        }
+
+        // UI UTILS
+        const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
+        const fecharModal = (id) => document.getElementById(id).classList.add('hidden');
+        const toggleAdmin = () => document.getElementById("adminDrawer").classList.toggle('open');
         function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
+
+        // Ativação Secreta Admin (5 Cliques na Logo)
+        let cliques = 0;
+        document.getElementById("logoAdmin").onclick = () => {
+            cliques++;
+            if(cliques >= 5) { toggleAdmin(); cliques = 0; }
+            setTimeout(() => cliques = 0, 3000);
+        };
+
+        // Drag & Drop Init
+        Sortable.create(document.getElementById('drag-container'), {
+            animation: 250,
+            ghostClass: 'opacity-20',
+            store: {
+                set: (s) => localStorage.setItem('panel-order', JSON.stringify(s.toArray())),
+                get: () => JSON.parse(localStorage.getItem('panel-order')) || []
+            }
+        });
     </script>
 </body>
 </html>
