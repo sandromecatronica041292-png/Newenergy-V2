@@ -1,93 +1,96 @@
-#include <WiFiManager.h>
-#include <HTTPClient.h>
-#include <ArduinoJson.h>
-#include <Wire.h>
-#include <Adafruit_SHT4x.h>
-#include <IRremoteESP8266.h>
-#include <IRsend.h>
-#include <IRac.h>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NewEnergy | Monitor Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <style>
+        :root { --navy: #002b49; --green: #00b2a9; }
+        body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--navy); }
+        .card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .btn-action { transition: all 0.2s; user-select: none; }
+        .btn-action:active { transform: scale(0.95); opacity: 0.8; }
+    </style>
+</head>
+<body class="p-6">
 
-#define LED_PIN 2
-#define IR_SEND_PIN 27
-#define SDA_PIN 4
-#define SCL_PIN 16
+    <div class="max-w-md mx-auto space-y-6">
+        <!-- MONITOR DE TEMPERATURA -->
+        <div class="card p-6 text-center">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temperatura Ambiente</span>
+            <h2 id="tempAtual" class="text-5xl font-black mt-2 text-[#00b2a9]">--°C</h2>
+        </div>
 
-Adafruit_SHT4x sht4;
-IRac ac(IR_SEND_PIN);
+        <!-- CONTROLE DO AR -->
+        <div class="card overflow-hidden">
+            <div class="bg-[#002b49] p-8 text-center text-white">
+                <span class="text-[10px] font-bold opacity-50 uppercase">Ajuste de Climatização</span>
+                <div class="flex justify-center items-center gap-8 mt-6">
+                    <button onclick="ajustarSetpoint(-1)" class="w-14 h-14 rounded-full border border-white/20 text-2xl btn-action">－</button>
+                    <span id="displaySetpoint" class="text-6xl font-light w-24">--°</span>
+                    <button onclick="ajustarSetpoint(1)" class="w-14 h-14 rounded-full border border-white/20 text-2xl btn-action">＋</button>
+                </div>
+            </div>
+            <div class="p-6 grid grid-cols-2 gap-4">
+                <button onclick="setPower(true)" class="py-4 bg-emerald-500 text-white rounded-2xl font-bold btn-action uppercase text-xs">Ligar</button>
+                <button onclick="setPower(false)" class="py-4 bg-rose-500 text-white rounded-2xl font-bold btn-action uppercase text-xs">Desligar</button>
+            </div>
+        </div>
+    </div>
 
-const char* FIREBASE_HOST = "controle-led-esp-oficial-default-rtdb.firebaseio.com";
-const char* FIREBASE_TOKEN = "zJdmxdQcXJokAlG8hTGREjd0CYiJemse5PZ9swod";
+    <script>
+        // CONFIGURAÇÃO FIREBASE
+        const firebaseConfig = {
+            databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-unsigned long timerComando = 0;
-unsigned long timerSensor = 0;
+        let estadoLocal = { setpoint: 22, power: false };
 
-void firebasePUT(String path, String value) {
-  HTTPClient http;
-  http.begin("https://" + String(FIREBASE_HOST) + path + ".json?auth=" + FIREBASE_TOKEN);
-  http.PUT(value);
-  http.end();
-}
+        // SINCRONIZAÇÃO EM TEMPO REAL
+        db.ref("/config_alertas").on("value", (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                estadoLocal = data;
+                // Força o valor a ser tratado como número
+                const temp = parseInt(data.setpoint) || 22;
+                document.getElementById("displaySetpoint").innerText = temp + "°";
+            }
+        });
 
-String firebaseGET(String path) {
-  HTTPClient http;
-  http.begin("https://" + String(FIREBASE_HOST) + path + ".json?auth=" + FIREBASE_TOKEN);
-  int code = http.GET();
-  String res = (code == 200) ? http.getString() : "";
-  http.end();
-  return res;
-}
+        db.ref("/telemetria/temperatura").on("value", (s) => {
+            document.getElementById("tempAtual").innerText = s.val() + "°C";
+        });
 
-void sincronizarAC() {
-  String payload = firebaseGET("/config_alertas");
-  StaticJsonDocument<256> doc;
-  deserializeJson(doc, payload);
+        // FUNÇÃO DE AJUSTE (CORRIGIDA)
+        function ajustarSetpoint(valor) {
+            let novoSetpoint = parseInt(estadoLocal.setpoint) + valor;
 
-  ac.next.protocol = decode_type_t::MIDEA; // Ajuste para sua marca
-  ac.next.degrees = doc["setpoint"] | 22;
-  ac.next.power = doc["power"] | false;
-  ac.next.mode = stdAc::opmode_t::kCool;
-  ac.next.fanspeed = stdAc::fanspeed_t::kAuto;
+            // Segurança: Padrão industrial 16°C a 30°C
+            if (novoSetpoint < 16) novoSetpoint = 16;
+            if (novoSetpoint > 30) novoSetpoint = 30;
 
-  ac.sendAc();
-  Serial.println("[IR] Comando enviado ao Ar Condicionado!");
-}
+            // Grava o novo valor e notifica o ESP32
+            db.ref("/config_alertas/setpoint").set(novoSetpoint).then(() => {
+                db.ref("/ir_system/execute").set({
+                    command: "ac_update",
+                    ts: Date.now()
+                });
+            });
+        }
 
-void setup() {
-  Serial.begin(115200);
-  pinMode(LED_PIN, OUTPUT);
-  ac.begin();
-
-  WiFiManager wm;
-  wm.autoConnect("NewEnergy_Pro");
-
-  Wire.begin(SDA_PIN, SCL_PIN);
-  if (!sht4.begin()) Serial.println("Erro: Sensor SHT4x não encontrado!");
-}
-
-void loop() {
-  // Verifica comandos a cada 1 segundo
-  if (millis() - timerComando > 1000) {
-    timerComando = millis();
-    String cmdPayload = firebaseGET("/ir_system/execute");
-    
-    if (cmdPayload != "" && cmdPayload != "null") {
-      StaticJsonDocument<128> doc;
-      deserializeJson(doc, cmdPayload);
-      String cmd = doc["command"] | "";
-
-      if (cmd == "ac_update") {
-        sincronizarAC();
-        firebasePUT("/ir_system/execute", "null"); // Limpa comando
-      }
-    }
-  }
-
-  // Envia sensores a cada 10 segundos
-  if (millis() - timerSensor > 10000) {
-    timerSensor = millis();
-    sensors_event_t h, t;
-    if (sht4.getEvent(&h, &t)) {
-      firebasePUT("/telemetria/temperatura", String(t.temperature, 1));
-    }
-  }
-}
+        function setPower(status) {
+            db.ref("/config_alertas/power").set(status).then(() => {
+                db.ref("/ir_system/execute").set({
+                    command: "ac_update",
+                    ts: Date.now()
+                });
+            });
+        }
+    </script>
+</body>
+</html>
