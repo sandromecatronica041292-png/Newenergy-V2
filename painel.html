@@ -4,36 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NewEnergy | Monitor Pro</title>
-    <!-- Bibliotecas Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    
     <style>
         :root { --navy: #002b49; --green: #00b2a9; }
         body { font-family: 'Inter', sans-serif; background: #f8fafc; color: var(--navy); }
         .card { background: white; border-radius: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .btn-action { transition: all 0.2s; user-select: none; cursor: pointer; }
+        .btn-action { transition: all 0.2s; user-select: none; }
         .btn-action:active { transform: scale(0.95); opacity: 0.8; }
-        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body class="p-6">
 
     <div class="max-w-md mx-auto space-y-6">
-        <!-- LOGO / STATUS -->
-        <div class="flex justify-between items-center px-2">
-            <h1 class="font-bold tracking-tighter text-xl">NEWENERGY <span class="text-[#00b2a9]">SOLUTIONS</span></h1>
-            <div id="statusBadge" class="h-2 w-2 rounded-full bg-slate-300"></div>
-        </div>
-
-        <!-- MONITOR DE TEMPERATURA (SHT4x) -->
-        <div class="card p-6 text-center border-b-4 border-[#00b2a9]">
+        <!-- MONITOR DE TEMPERATURA -->
+        <div class="card p-6 text-center">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Temperatura Ambiente</span>
-            <h2 id="tempAtual" class="text-5xl font-black mt-2 text-[#002b49]">--°C</h2>
+            <h2 id="tempAtual" class="text-5xl font-black mt-2 text-[#00b2a9]">--°C</h2>
         </div>
 
-        <!-- CONTROLE DO AR CONDICIONADO -->
+        <!-- CONTROLE DO AR -->
         <div class="card overflow-hidden">
             <div class="bg-[#002b49] p-8 text-center text-white">
                 <span class="text-[10px] font-bold opacity-50 uppercase">Ajuste de Climatização</span>
@@ -43,14 +34,11 @@
                     <button onclick="ajustarSetpoint(1)" class="w-14 h-14 rounded-full border border-white/20 text-2xl btn-action">＋</button>
                 </div>
             </div>
-            
             <div class="p-6 grid grid-cols-2 gap-4">
-                <button onclick="setPower(true)" class="py-4 bg-emerald-500 text-white rounded-2xl font-bold btn-action uppercase text-xs shadow-lg shadow-emerald-200">Ligar</button>
-                <button onclick="setPower(false)" class="py-4 bg-rose-500 text-white rounded-2xl font-bold btn-action uppercase text-xs shadow-lg shadow-rose-200">Desligar</button>
+                <button onclick="setPower(true)" class="py-4 bg-emerald-500 text-white rounded-2xl font-bold btn-action uppercase text-xs">Ligar</button>
+                <button onclick="setPower(false)" class="py-4 bg-rose-500 text-white rounded-2xl font-bold btn-action uppercase text-xs">Desligar</button>
             </div>
         </div>
-
-        <p class="text-center text-[10px] text-slate-400 uppercase tracking-widest">Painel de Controle V1.0</p>
     </div>
 
     <script>
@@ -61,48 +49,47 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Estado local para evitar lag na interface
         let estadoLocal = { setpoint: 22, power: false };
 
-        // 1. SINCRONIZAÇÃO EM TEMPO REAL
+        // SINCRONIZAÇÃO EM TEMPO REAL
         db.ref("/config_alertas").on("value", (snapshot) => {
             const data = snapshot.val();
-            if (data) {
+            if (snapshot.exists()) {
                 estadoLocal = data;
-                // Garante que o valor exibido seja um número e evita o erro do "13"
+                // CORREÇÃO: Garante que 'temp' seja um número real antes de exibir
                 const temp = parseInt(data.setpoint) || 22;
                 document.getElementById("displaySetpoint").innerText = temp + "°";
-                document.getElementById("statusBadge").classList.replace('bg-slate-300', 'bg-emerald-500');
+            } else {
+                // Inicializa se o banco estiver vazio
+                db.ref("/config_alertas").set({ setpoint: 22, power: false });
             }
         });
 
-        // 2. LEITURA DO SENSOR AMBIENTE
         db.ref("/telemetria/temperatura").on("value", (s) => {
-            const val = s.val();
-            if (val !== null) {
-                document.getElementById("tempAtual").innerText = val + "°C";
+            if (s.exists()) {
+                document.getElementById("tempAtual").innerText = s.val() + "°C";
             }
         });
 
-        // 3. FUNÇÃO DE AJUSTE (CORRIGIDA)
+        // FUNÇÃO DE AJUSTE (CORRIGIDA PARA DESTRAVAR)
         function ajustarSetpoint(valor) {
-            // Converte explicitamente para número para evitar erros de string
-            let novoSetpoint = parseInt(estadoLocal.setpoint) + valor;
+            // CORREÇÃO: Forçamos a conversão para número antes da soma para evitar "13+1=131"
+            let atual = parseInt(estadoLocal.setpoint) || 22;
+            let novoSetpoint = atual + valor;
 
-            // Segurança Industrial: Faixa aceitável para protocolos IR
+            // Segurança: Padrão industrial 16°C a 30°C
             if (novoSetpoint < 16) novoSetpoint = 16;
             if (novoSetpoint > 30) novoSetpoint = 30;
 
-            // Atualiza o valor e envia o comando de execução para o ESP32
+            // Grava o novo valor e notifica o ESP32
             db.ref("/config_alertas/setpoint").set(novoSetpoint).then(() => {
                 db.ref("/ir_system/execute").set({
                     command: "ac_update",
-                    ts: Date.now() // Timestamp garante que o ESP32 detecte uma nova mudança
+                    ts: Date.now()
                 });
-            }).catch(err => console.error("Erro ao atualizar Firebase:", err));
+            });
         }
 
-        // 4. FUNÇÃO LIGAR / DESLIGAR
         function setPower(status) {
             db.ref("/config_alertas/power").set(status).then(() => {
                 db.ref("/ir_system/execute").set({
