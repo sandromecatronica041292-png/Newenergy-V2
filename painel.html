@@ -3,131 +3,257 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NewEnergy | Monitor Pro</title>
+<title>NewEnergy | Monitor Pro Intelligence</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
 <style>
-body { background:#f8fafc; font-family: Arial; }
-.card { background:white; border-radius:16px; padding:16px; }
+:root { --navy: #002b49; --green: #00b2a9; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
+    color: var(--navy);
+    overflow-x: hidden;
+}
+
+.btn-active-effect:active {
+    transform: scale(0.96);
+    filter: brightness(1.2);
+    transition: all 0.1s ease;
+}
+
+.card-premium {
+    background: white;
+    border-radius: 1.25rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    cursor: grab;
+}
+
+.card-premium:active {
+    cursor: grabbing;
+    transform: scale(0.98);
+}
+
+.gauge-container {
+    width: 120px;
+    height: 65px;
+}
+
+.gauge-bg {
+    fill: none;
+    stroke: #f1f5f9;
+    stroke-width: 10;
+}
+
+.gauge-fill {
+    fill: none;
+    stroke: var(--green);
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1.5s ease;
+}
+
+.modal-blur {
+    backdrop-filter: blur(12px);
+    background: rgba(0,43,73,0.4);
+}
+
+/* BOTÕES TV */
+.btn-tv {
+    background: #f1f5f9;
+    color: #334155;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 11px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 0 #cbd5e1;
+}
+
+.btn-tv:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 #cbd5e1;
+}
+
+/* ADMIN */
+#adminDrawer {
+    transform: translateX(100%);
+    transition: 0.4s;
+}
+#adminDrawer.open {
+    transform: translateX(0);
+}
+
+.label-tiny {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #64748b;
+}
+
+.admin-input {
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 6px;
+    margin-bottom: 10px;
+}
+
+.btn-learn {
+    border: 1px dashed #cbd5e1;
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 10px;
+}
 </style>
 </head>
 
-<body class="p-4">
+<body class="pb-10">
 
-<h1 class="text-xl font-bold mb-4">NewEnergy Control</h1>
+<!-- NAV -->
+<nav class="bg-white border-b sticky top-0 z-50">
+<div class="max-w-6xl mx-auto px-6 h-14 flex justify-between items-center">
 
-<!-- TEMPERATURA -->
-<div class="card mb-4">
-<h2>Temperatura</h2>
-<p id="temp">--</p>
+<div id="logoAdmin" class="flex gap-3 cursor-pointer">
+<div class="w-7 h-7 bg-[#002b49] rounded flex items-center justify-center text-[#00b2a9]">⚡</div>
+<div>
+<h1 class="font-bold">NewEnergy</h1>
+<span id="headerCliente" class="text-xs text-gray-400">CONECTADO</span>
+</div>
 </div>
 
-<!-- UMIDADE -->
-<div class="card mb-4">
-<h2>Umidade</h2>
-<p id="hum">--</p>
+<button onclick="fazerLogout()" class="text-red-500 text-xs font-bold">SAIR</button>
+
+</div>
+</nav>
+
+<main class="max-w-6xl mx-auto px-6 mt-6">
+
+<!-- MÉTRICAS -->
+<div class="grid grid-cols-2 gap-4 mb-6">
+
+<div class="card-premium p-4 text-center">
+<span class="label-tiny">Temperatura</span>
+<svg viewBox="0 0 100 50">
+<path class="gauge-bg" d="M10 45 A 35 35 0 0 1 90 45"/>
+<path id="tempGauge" class="gauge-fill" d="M10 45 A 35 35 0 0 1 90 45"/>
+</svg>
+<h2 id="tempVal">--°C</h2>
 </div>
 
-<!-- LED -->
-<div class="card mb-4">
-<button onclick="toggleLED()" id="btnLED">Ligar Luz</button>
+<div class="card-premium p-4 text-center">
+<span class="label-tiny">Umidade</span>
+<svg viewBox="0 0 100 50">
+<path class="gauge-bg" d="M10 45 A 35 35 0 0 1 90 45"/>
+<path id="humGauge" class="gauge-fill" d="M10 45 A 35 35 0 0 1 90 45" style="stroke:#3b82f6"/>
+</svg>
+<h2 id="humVal">--%</h2>
 </div>
 
-<!-- AR -->
-<div class="card mb-4">
-<h2>Ar Condicionado</h2>
+</div>
 
-<p id="setpoint">22°</p>
+<!-- CARDS -->
+<div id="drag-container" class="grid grid-cols-2 gap-4">
 
-<button onclick="mudarTemp(-1)">-</button>
-<button onclick="mudarTemp(1)">+</button>
+<div class="card-premium p-4">
+<h4>Iluminação</h4>
+<button onclick="toggleLED()" id="btnLED" class="w-full mt-3 bg-[#002b49] text-white py-2 rounded">LIGAR</button>
+</div>
 
-<br><br>
+<div class="card-premium p-4" onclick="abrirModal('acModal')">
+<h4>Ar Condicionado</h4>
+<div id="acAlvoDisplay">--°</div>
+</div>
+
+<div class="card-premium p-4" onclick="abrirModal('tvModal')">
+<h4>Smart TV</h4>
+</div>
+
+</div>
+
+</main>
+
+<!-- MODAL AC -->
+<div id="acModal" class="hidden fixed inset-0 modal-blur flex items-center justify-center">
+
+<div class="bg-white p-6 rounded-xl">
+
+<button onclick="ajustarSetpoint(1)">+</button>
+<span id="acModalTemp">--°</span>
+<button onclick="ajustarSetpoint(-1)">-</button>
 
 <button onclick="sendIR('ac_on')">Ligar</button>
 <button onclick="sendIR('ac_off')">Desligar</button>
+
+<button onclick="fecharModal('acModal')">Fechar</button>
+
 </div>
 
-<!-- TV -->
-<div class="card mb-4">
-<h2>TV</h2>
-
-<button onclick="sendIR('tv_power')">Power</button>
-<button onclick="sendIR('tv_vol_up')">Vol +</button>
-<button onclick="sendIR('tv_vol_down')">Vol -</button>
 </div>
 
+<!-- JS -->
 <script>
+
 firebase.initializeApp({
-apiKey: "SUA_API",
-authDomain: "SEU_DOMINIO",
-databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com"
+apiKey:"AIzaSy...",
+databaseURL:"https://controle-led-esp-oficial-default-rtdb.firebaseio.com"
 });
 
 const db = firebase.database();
+const auth = firebase.auth();
 
-let setpoint = 22;
+auth.onAuthStateChanged(user=>{
+if(!user) location.href="index.html";
 
-// 🔥 TEMPERATURA REALTIME
-db.ref("/temp").on("value", s => {
-document.getElementById("temp").innerText = s.val() + " °C";
+db.ref("/temp").on("value",s=>{
+let v=s.val()||0;
+document.getElementById("tempVal").innerText=v+"°C";
 });
 
-// 🔥 UMIDADE REALTIME
-db.ref("/hum").on("value", s => {
-document.getElementById("hum").innerText = s.val() + " %";
+db.ref("/hum").on("value",s=>{
+let v=s.val()||0;
+document.getElementById("humVal").innerText=v+"%";
 });
 
-// 🔥 LED
-db.ref("/led").on("value", s => {
-const estado = s.val();
-document.getElementById("btnLED").innerText = estado ? "Desligar Luz" : "Ligar Luz";
 });
-
-// 🔥 SETPOINT
-db.ref("/config_alertas/setpoint").on("value", s => {
-setpoint = s.val() || 22;
-document.getElementById("setpoint").innerText = setpoint + "°";
-});
-
-// 🔥 FUNÇÕES
 
 function toggleLED(){
 db.ref("/led").once("value").then(s=>{
-db.ref("/led").set(s.val() ? 0 : 1);
+db.ref("/led").set(s.val()==1?0:1);
 });
 }
 
 function sendIR(cmd){
-db.ref("/ir_system/execute").set({
-command: cmd,
-ts: Date.now()
-});
+db.ref("/ir_system/execute").set({command:cmd});
 }
 
-function mudarTemp(valor){
-
-let novo = setpoint + valor;
-
-// 🔥 LIMITE SEGURO
-if(novo < 16) novo = 16;
-if(novo > 30) novo = 30;
-
-db.ref("/config_alertas/setpoint").set(novo);
-
-// 🔥 ENVIA COMANDO REAL
-if(valor > 0){
-sendIR("ac_temp_up");
-}else{
-sendIR("ac_temp_down");
+function ajustarSetpoint(v){
+db.ref("/config_alertas/setpoint").transaction(n=>(n||22)+v);
 }
 
+function abrirModal(id){
+document.getElementById(id).classList.remove("hidden");
 }
+
+function fecharModal(id){
+document.getElementById(id).classList.add("hidden");
+}
+
+function fazerLogout(){
+auth.signOut();
+}
+
 </script>
 
 </body>
