@@ -1,199 +1,274 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NewEnergy | Smart Control</title>
-    <!-- Tailwind para Design Moderno -->
+    <title>NewEnergy Solutions | Intelligence</title>
+    
+    <!-- Bibliotecas -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    <!-- Firebase Legacy SDK (Compat) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .btn-active:active { transform: scale(0.95); transition: 0.1s; }
-        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f1a; color: #f8fafc; overflow-x: hidden; }
+        
+        /* Estilo Premium dos Cards */
+        .card-premium {
+            background: rgba(17, 25, 40, 0.75);
+            backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-premium:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 10px 30px -10px rgba(59, 130, 246, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* Gauge de Temperatura */
+        .temp-gradient {
+            background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+        }
+
+        /* Drawer Lateral Estilizado */
+        .admin-drawer {
+            position: fixed; top: 0; right: -100%; width: 100%; max-width: 380px; height: 100%;
+            background: #111827; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .admin-drawer.open { right: 0; }
+
+        /* Switch Customizado */
+        .switch-input:checked ~ .switch-dot { transform: translateX(100%); background-color: #3b82f6; }
     </style>
 </head>
-<body class="pb-10">
+<body class="p-4 md:p-10">
 
-    <!-- Navegação -->
-    <nav class="bg-[#002b49] text-white p-4 shadow-lg mb-6">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2" id="btnAdminTrigger">
-                <div class="w-8 h-8 bg-[#00b2a9] rounded-lg flex items-center justify-center font-black text-white">NE</div>
-                <h1 class="font-bold tracking-tight">NewEnergy Solutions</h1>
+    <!-- Header Principal -->
+    <header class="max-w-6xl mx-auto flex justify-between items-center mb-12">
+        <div class="flex items-center gap-4">
+            <div id="logoAdmin" class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 cursor-pointer active:scale-90 transition">
+                <i class="fas fa-bolt text-white text-xl"></i>
             </div>
-            <div id="wifi-status" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-        </div>
-    </nav>
-
-    <main class="max-w-md mx-auto px-4">
-        
-        <!-- Dashboard de Sensores -->
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <div class="glass-card p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Temperatura</p>
-                <h2 id="tempVal" class="text-3xl font-black text-slate-800">--°C</h2>
-            </div>
-            <div class="glass-card p-4 rounded-2xl border border-slate-200 shadow-sm text-center">
-                <p class="text-[10px] font-bold text-slate-400 uppercase">Umidade</p>
-                <h2 id="humVal" class="text-3xl font-black text-slate-800">--%</h2>
-            </div>
-        </div>
-
-        <!-- Controle de Ar Condicionado -->
-        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 mb-6">
-            <div class="bg-slate-50 p-4 border-b border-slate-100 flex justify-between items-center">
-                <span class="text-xs font-bold text-slate-500">AR CONDICIONADO</span>
-                <span id="acStatusLabel" class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">PRONTO</span>
-            </div>
-            
-            <div class="p-8 text-center">
-                <div class="flex justify-center items-center gap-8 mb-8">
-                    <button onclick="ajustarSetpoint(-1)" class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold btn-active shadow-sm">－</button>
-                    <div class="flex flex-col">
-                        <span id="displaySetpoint" class="text-6xl font-black text-[#002b49]">22</span>
-                        <span class="text-sm font-bold text-slate-300">GRAUS</span>
-                    </div>
-                    <button onclick="ajustarSetpoint(1)" class="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center text-2xl font-bold btn-active shadow-sm">＋</button>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <button onclick="enviarComandoIR('ac_on')" class="bg-emerald-500 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-emerald-200 btn-active uppercase">Ligar</button>
-                    <button onclick="enviarComandoIR('ac_off')" class="bg-rose-500 text-white py-4 rounded-2xl font-bold text-sm shadow-lg shadow-rose-200 btn-active uppercase">Desligar</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Botão de Iluminação -->
-        <div class="bg-white p-6 rounded-3xl shadow-md flex justify-between items-center mb-10">
             <div>
-                <h4 class="font-bold text-slate-800">Iluminação</h4>
-                <p id="ledDesc" class="text-xs text-slate-400">Status: Desligado</p>
-            </div>
-            <button id="btnToggleLED" onclick="toggleLED()" class="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center btn-active transition-colors">
-                <span id="ledIcon">⚫</span>
-            </button>
-        </div>
-
-        <!-- Painel de Engenharia (Oculto por padrão) -->
-        <div id="adminPanel" class="hidden bg-slate-800 text-white p-6 rounded-3xl shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xs font-black tracking-widest text-[#00b2a9]">MODO ENGENHARIA IR</h3>
-                <button onclick="fecharAdmin()" class="text-slate-500">✕</button>
-            </div>
-            <p class="text-[10px] text-slate-400 mb-4 leading-relaxed">
-                Clique na função e aponte o controle remoto para o sensor do ESP32 para gravar a frequência.
-            </p>
-            <div class="grid grid-cols-2 gap-2">
-                <button onclick="gravarComando('ac_on')" class="bg-white/10 hover:bg-white/20 p-3 rounded-lg text-[10px] font-bold transition-all">GRAVAR LIGAR</button>
-                <button onclick="gravarComando('ac_off')" class="bg-white/10 hover:bg-white/20 p-3 rounded-lg text-[10px] font-bold transition-all">GRAVAR DESLIGAR</button>
-                <button onclick="gravarComando('ac_temp_up')" class="bg-white/10 hover:bg-white/20 p-3 rounded-lg text-[10px] font-bold transition-all">GRAVAR TEMP +</button>
-                <button onclick="gravarComando('ac_temp_down')" class="bg-white/10 hover:bg-white/20 p-3 rounded-lg text-[10px] font-bold transition-all">GRAVAR TEMP -</button>
+                <h1 class="text-xl font-bold tracking-tighter">NEWENERGY <span class="text-blue-500 font-light text-lg">SOLUTIONS</span></h1>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Sistema Ativo</p>
+                </div>
             </div>
         </div>
+        <button onclick="toggleAdmin()" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-700">
+            <i class="fas fa-sliders-h text-slate-400"></i>
+        </button>
+    </header>
 
+    <!-- Container Arrastável -->
+    <main id="main-grid" class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Card Temperatura -->
+        <div class="card-premium p-8 relative overflow-hidden group" data-id="1">
+            <div class="flex justify-between items-start relative z-10">
+                <div>
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Temperatura</p>
+                    <div class="flex items-baseline gap-1">
+                        <span id="temp-val" class="text-6xl font-bold tracking-tighter">--</span>
+                        <span class="text-2xl text-blue-500 font-light">°C</span>
+                    </div>
+                </div>
+                <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500">
+                    <i class="fas fa-temperature-high text-xl"></i>
+                </div>
+            </div>
+            <div class="mt-8 h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div id="temp-bar" class="h-full temp-gradient transition-all duration-1000" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Card Umidade -->
+        <div class="card-premium p-8 relative overflow-hidden" data-id="2">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Umidade Ar</p>
+                    <div class="flex items-baseline gap-1">
+                        <span id="humi-val" class="text-6xl font-bold tracking-tighter">--</span>
+                        <span class="text-2xl text-cyan-500 font-light">%</span>
+                    </div>
+                </div>
+                <div class="w-12 h-12 bg-cyan-500/10 rounded-2xl flex items-center justify-center text-cyan-500">
+                    <i class="fas fa-droplet text-xl"></i>
+                </div>
+            </div>
+            <p class="mt-8 text-xs text-slate-500 font-medium">Condições ideais de armazenamento</p>
+        </div>
+
+        <!-- Card Ar Condicionado (Controle Central) -->
+        <div class="card-premium p-8 border-t-2 border-t-blue-600 lg:col-span-1 md:col-span-2" data-id="3">
+            <div class="flex justify-between items-center mb-10">
+                <h3 class="font-bold text-sm uppercase tracking-widest text-slate-300">Climatização</h3>
+                <div class="flex items-center gap-3">
+                    <span class="text-[10px] font-bold text-slate-500">AUTO</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="acAuto" class="sr-only switch-input" onchange="toggleAuto()">
+                        <div class="w-10 h-5 bg-slate-800 rounded-full border border-slate-700"></div>
+                        <div class="switch-dot absolute left-1 top-1 bg-slate-400 w-3 h-3 rounded-full transition"></div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center">
+                <div class="text-center mb-8">
+                    <p class="text-[10px] text-slate-500 font-bold mb-1 uppercase">Setpoint Atual</p>
+                    <span id="setpoint-val" class="text-5xl font-black text-white">22</span><span class="text-xl text-slate-600 italic font-light">°C</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 w-full">
+                    <button onclick="ajustarSetpoint(-1)" class="h-16 rounded-2xl bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center border border-slate-700 transition active:scale-90">
+                        <i class="fas fa-minus text-slate-300"></i>
+                    </button>
+                    <button onclick="sendIR('ac_power')" class="h-16 rounded-2xl bg-blue-600 hover:bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-600/20 transition active:scale-95 group">
+                        <i class="fas fa-power-off text-white group-hover:rotate-12 transition"></i>
+                    </button>
+                    <button onclick="ajustarSetpoint(1)" class="h-16 rounded-2xl bg-slate-800/50 hover:bg-slate-700 flex items-center justify-center border border-slate-700 transition active:scale-90">
+                        <i class="fas fa-plus text-slate-300"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
     </main>
 
+    <!-- Admin Drawer (Painel de Engenharia) -->
+    <aside id="adminDrawer" class="admin-drawer p-8 flex flex-col">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-lg font-bold tracking-tight">Configurações <span class="text-blue-500">Técnicas</span></h2>
+            <button onclick="toggleAdmin()" class="text-slate-500 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+        </div>
+
+        <div class="space-y-8 flex-1 overflow-y-auto pr-2">
+            <!-- Setor de Aprendizado IR -->
+            <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Captura de Comandos IR</p>
+                <div class="grid grid-cols-1 gap-3">
+                    <button onclick="startLearn('ac_power')" class="w-full p-4 bg-slate-800/50 border border-slate-700 rounded-xl text-left text-xs font-bold hover:border-blue-500 transition flex justify-between items-center">
+                        Gravar Ligar/Desligar <i class="fas fa-rss text-blue-500"></i>
+                    </button>
+                    <button onclick="startLearn('ac_temp_up')" class="w-full p-4 bg-slate-800/50 border border-slate-700 rounded-xl text-left text-xs font-bold hover:border-blue-500 transition flex justify-between items-center">
+                        Gravar Aumentar Temp <i class="fas fa-plus text-blue-500"></i>
+                    </button>
+                    <button onclick="startLearn('ac_temp_down')" class="w-full p-4 bg-slate-800/50 border border-slate-700 rounded-xl text-left text-xs font-bold hover:border-blue-500 transition flex justify-between items-center">
+                        Gravar Diminuir Temp <i class="fas fa-minus text-blue-500"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Setor de Limites -->
+            <div>
+                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Limites de Alerta</p>
+                <div class="space-y-4">
+                    <div class="bg-slate-900 rounded-2xl p-4 border border-slate-800">
+                        <label class="text-[10px] text-slate-500 font-bold block mb-2 uppercase">Temperatura Crítica</label>
+                        <input type="number" id="tMax" class="bg-transparent text-2xl font-bold w-full outline-none text-white" placeholder="28">
+                    </div>
+                </div>
+                <button onclick="salvarConfig()" class="w-full mt-6 py-4 bg-green-600 hover:bg-green-500 rounded-2xl font-bold text-sm shadow-lg shadow-green-600/10 transition active:scale-95">
+                    SALVAR ALTERAÇÕES
+                </button>
+            </div>
+        </div>
+
+        <div class="pt-6 border-t border-slate-800 mt-auto">
+            <p class="text-[9px] text-slate-600 text-center uppercase tracking-tighter">NewEnergy Solutions Hardware | v1.0.4</p>
+        </div>
+    </aside>
+
     <script>
-        // Configuração do Firebase
+        // CONFIGURAÇÃO FIREBASE (Substitua pelos seus dados)
         const firebaseConfig = {
-            databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com"
+            apiKey: "AIzaSy...",
+            databaseURL: "https://seu-projeto-rtdb.firebaseio.com",
+            projectId: "seu-projeto"
         };
+        
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Variáveis de Estado
-        let setpoint = 22;
+        let localConfig = {};
 
-        // --- Sincronização em Tempo Real ---
-        
-        // Temperatura e Umidade
-        db.ref("/temp").on("value", s => document.getElementById("tempVal").innerText = s.val() + "°C");
-        db.ref("/hum").on("value", s => document.getElementById("humVal").innerText = s.val() + "%");
-
-        // Status do LED
-        db.ref("/led").on("value", s => {
-            const estado = s.val();
-            const btn = document.getElementById("btnToggleLED");
-            const icon = document.getElementById("ledIcon");
-            const desc = document.getElementById("ledDesc");
-
-            if(estado == 1) {
-                btn.style.backgroundColor = "#00b2a9";
-                icon.innerText = "💡";
-                desc.innerText = "Status: Ligado";
-            } else {
-                btn.style.backgroundColor = "#1e293b";
-                icon.innerText = "⚫";
-                desc.innerText = "Status: Desligado";
-            }
+        // Sincronização em Tempo Real
+        db.ref("/sensor").on("value", s => {
+            const data = s.val();
+            if(!data) return;
+            document.getElementById("temp-val").innerText = data.t.toFixed(1);
+            document.getElementById("humi-val").innerText = Math.round(data.h);
+            document.getElementById("temp-bar").style.width = (data.t * 2) + "%";
         });
 
-        // --- Funções de Controle ---
+        db.ref("/config_alertas").on("value", s => {
+            localConfig = s.val() || {};
+            document.getElementById("setpoint-val").innerText = localConfig.setpoint || 22;
+            document.getElementById("acAuto").checked = localConfig.acAuto || false;
+            document.getElementById("tMax").value = localConfig.tMax || 28;
+        });
 
-        function toggleLED() {
-            db.ref("/led").once("value", s => {
-                db.ref("/led").set(s.val() == 1 ? 0 : 1);
+        // Funções de Controle IR
+        function sendIR(command) {
+            db.ref("/ir_system/execute").set({
+                command: command,
+                ts: Date.now()
             });
         }
 
         function ajustarSetpoint(val) {
-            setpoint += val;
-            if(setpoint < 16) setpoint = 16;
-            if(setpoint > 30) setpoint = 30;
-            document.getElementById("displaySetpoint").innerText = setpoint;
-            
-            // Opcional: Enviar comando IR de temp ao ajustar
-            enviarComandoIR(val > 0 ? "ac_temp_up" : "ac_temp_down");
+            const novo = (localConfig.setpoint || 22) + val;
+            if(novo < 16 || novo > 30) return;
+            db.ref("/config_alertas/setpoint").set(novo);
+            sendIR(val > 0 ? 'ac_temp_up' : 'ac_temp_down');
         }
 
-        function enviarComandoIR(cmd) {
-            db.ref("/ir_system/execute").set({
-                command: cmd,
-                ts: Date.now()
-            }).then(() => {
-                const label = document.getElementById("acStatusLabel");
-                label.innerText = "ENVIANDO...";
-                label.className = "text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold";
-                
-                setTimeout(() => {
-                    label.innerText = "PRONTO";
-                    label.className = "text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold";
-                }, 2000);
-            });
-        }
-
-        // --- Funções de Engenharia (IR Learn) ---
-
-        function gravarComando(funcao) {
+        function startLearn(func) {
             db.ref("/ir_system/learn").set({
                 active: true,
-                function: funcao,
+                function: func,
                 ts: Date.now()
             });
-            alert("Modo de Gravação Ativo!\n\nO ESP32 está esperando o sinal do controle para a função: " + funcao);
+            alert("Modo de escuta ativado para: " + func);
         }
 
-        // Segredo para abrir o painel (5 cliques na logo)
-        let cliques = 0;
-        document.getElementById("btnAdminTrigger").onclick = () => {
-            cliques++;
-            if(cliques >= 5) {
-                document.getElementById("adminPanel").classList.remove('hidden');
-                cliques = 0;
-            }
-            setTimeout(() => cliques = 0, 3000);
+        function toggleAuto() {
+            db.ref("/config_alertas/acAuto").set(!localConfig.acAuto);
+        }
+
+        function salvarConfig() {
+            db.ref("/config_alertas").update({
+                tMax: parseFloat(document.getElementById("tMax").value)
+            }).then(() => {
+                alert("Configurações atualizadas!");
+                toggleAdmin();
+            });
+        }
+
+        // UI Helpers
+        function toggleAdmin() { document.getElementById("adminDrawer").classList.toggle('open'); }
+
+        // Ativação por 5 cliques na logo
+        let logoClicks = 0;
+        document.getElementById("logoAdmin").onclick = () => {
+            logoClicks++;
+            if(logoClicks >= 5) { toggleAdmin(); logoClicks = 0; }
+            setTimeout(() => logoClicks = 0, 3000);
         };
 
-        function fecharAdmin() {
-            document.getElementById("adminPanel").classList.add('hidden');
-        }
-
+        // Arrastar e soltar cards
+        Sortable.create(document.getElementById('main-grid'), {
+            animation: 300,
+            ghostClass: 'opacity-20'
+        });
     </script>
 </body>
 </html>
