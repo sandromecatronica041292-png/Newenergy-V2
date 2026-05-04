@@ -28,7 +28,6 @@
         #adminDrawer.open { transform: translateX(0); }
         .label-tiny { font-size: 0.6rem !important; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: #64748b; }
         .admin-input { @apply w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm mb-3 outline-none focus:border-[#00b2a9]; }
-        .btn-learn { @apply border border-dashed border-slate-300 p-2 rounded-lg text-[9px] font-bold hover:bg-slate-50 transition-all; }
     </style>
 </head>
 <body class="pb-10">
@@ -49,6 +48,7 @@
     </nav>
 
     <main class="max-w-6xl mx-auto px-6 mt-6">
+        <!-- GAUGES DE TELEMETRIA -->
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="card-premium p-4 flex flex-col items-center">
                 <span class="label-tiny mb-2">TEMPERATURA</span>
@@ -84,7 +84,7 @@
                 <div>
                     <h4 class="text-sm font-bold">Iluminação</h4>
                     <span class="label-tiny block mb-3">SALA PRINCIPAL</span>
-                    <button id="btnLED" onclick="toggleLED()" class="w-full py-2.5 bg-navy text-white rounded-lg font-bold text-[10px] uppercase tracking-widest btn-active-effect">LIGAR</button>
+                    <button id="btnLED" onclick="toggleLED()" class="w-full py-2.5 bg-navy text-white rounded-lg font-bold text-[10px] uppercase tracking-widest btn-active-effect">CARREGANDO...</button>
                 </div>
             </div>
 
@@ -113,7 +113,7 @@
                 </div>
             </div>
 
-            <!-- RELATÓRIOS -->
+            <!-- HISTÓRICO/DADOS -->
             <div onclick="window.location.href='historico.html'" class="card-premium p-5 flex flex-col justify-between aspect-square bg-[#002b49] border-none text-white btn-active-effect" data-id="data">
                 <div class="w-10 h-10 bg-white/10 text-[#00b2a9] rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2"></path></svg>
@@ -126,7 +126,7 @@
         </div>
     </main>
 
-    <!-- MODAL AC -->
+    <!-- MODAL AR CONDICIONADO -->
     <div id="acModal" class="hidden fixed inset-0 z-[60] modal-blur flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden">
             <div class="bg-[#002b49] p-8 text-center text-white">
@@ -176,9 +176,8 @@
             <h2 class="text-lg font-extrabold text-navy">Engenharia</h2>
             <button onclick="toggleAdmin()" class="text-slate-300">✕</button>
         </div>
-
         <div class="mb-8">
-            <h5 class="label-tiny mb-4">Configurações de Rede</h5>
+            <h5 class="label-tiny mb-4">Parâmetros de Sistema</h5>
             <label class="label-tiny">Marca do Ar</label>
             <select id="cfgMarca" class="admin-input">
                 <option value="MIDEA">MIDEA</option>
@@ -186,11 +185,11 @@
                 <option value="GREE">GREE</option>
                 <option value="CARRIER">CARRIER</option>
             </select>
-            <label class="label-tiny">Cliente</label>
-            <input type="text" id="cfgCliente" class="admin-input">
-            <button onclick="salvarConfig()" class="w-full py-3 bg-[#00b2a9] text-white rounded-xl font-bold text-[10px] btn-active-effect">SALVAR PARÂMETROS</button>
+            <label class="label-tiny">Identificação do Cliente</label>
+            <input type="text" id="cfgCliente" class="admin-input" placeholder="Ex: Unidade Maceió">
+            <button onclick="salvarConfig()" class="w-full py-3 bg-[#00b2a9] text-white rounded-xl font-bold text-[10px] btn-active-effect uppercase">Atualizar Hardware</button>
         </div>
-    </div>
+    </main>
 
     <script>
         // CONFIGURAÇÃO FIREBASE
@@ -225,6 +224,7 @@
                 document.getElementById("acAlvoDisplay").innerText = (val.setpoint || 22) + "°";
                 document.getElementById("acModalTemp").innerText = (val.setpoint || 22) + "°";
                 document.getElementById("cfgMarca").value = val.marca_ac || "MIDEA";
+                document.getElementById("cfgCliente").value = val.cliente || "";
                 
                 const badge = document.getElementById("badgeAC");
                 badge.innerText = val.power ? "LIGADO" : "DESLIGADO";
@@ -256,12 +256,11 @@
             });
         });
 
-        // --- FUNÇÕES DE CONTROLE (CONEXÃO COM ESP32) ---
+        // --- FUNÇÕES DE COMANDO (SINCRONIZADAS COM ESP32) ---
 
         function controlarAC(ligar) {
-            // 1. Primeiro atualiza o estado de energia desejado
             db.ref("/config_alertas/power").set(ligar).then(() => {
-                // 2. Envia o comando de atualização que o ESP32 escuta
+                // Notifica o ESP32 para ler o novo estado
                 db.ref("/ir_system/execute").set({ 
                     command: "ac_update", 
                     ts: Date.now() 
@@ -271,7 +270,7 @@
 
         function ajustarSetpoint(v) { 
             const novo = (config.setpoint || 22) + v;
-            if (novo < 16 || novo > 30) return; // Limite físico do AC
+            if (novo < 16 || novo > 30) return; // Segurança: Evita valores inválidos
 
             db.ref("/config_alertas/setpoint").set(novo).then(() => {
                 db.ref("/ir_system/execute").set({ 
@@ -282,7 +281,6 @@
         }
 
         function sendIR(cmd) {
-            // Comandos simples (TV ou outros)
             db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); 
         }
 
@@ -295,7 +293,11 @@
                 cliente: document.getElementById("cfgCliente").value,
                 marca_ac: document.getElementById("cfgMarca").value
             };
-            db.ref("/config_alertas").update(data).then(() => alert("Parâmetros Enviados ao ESP32!"));
+            db.ref("/config_alertas").update(data).then(() => {
+                // Força o ESP32 a carregar a nova marca imediatamente
+                db.ref("/ir_system/execute").set({ command: "ac_update", ts: Date.now() });
+                alert("Parâmetros de Hardware Atualizados!");
+            });
         }
 
         // UI UTILS
@@ -304,6 +306,7 @@
         const toggleAdmin = () => document.getElementById("adminDrawer").classList.toggle('open');
         function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
+        // Ativação oculta do painel de engenharia (5 cliques no logo)
         let cliques = 0;
         document.getElementById("logoAdmin").onclick = () => {
             cliques++;
@@ -311,6 +314,7 @@
             setTimeout(() => cliques = 0, 3000);
         };
 
+        // Ordenação de painéis
         Sortable.create(document.getElementById('drag-container'), {
             animation: 250,
             ghostClass: 'opacity-20',
