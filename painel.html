@@ -1,146 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NewEnergy | Monitor Pro</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+body { background:#f8fafc; font-family: Arial; }
+.card { background:white; border-radius:16px; padding:16px; }
+</style>
+</head>
+
+<body class="p-4">
+
+<h1 class="text-xl font-bold mb-4">NewEnergy Control</h1>
+
+<!-- TEMPERATURA -->
+<div class="card mb-4">
+<h2>Temperatura</h2>
+<p id="temp">--</p>
+</div>
+
+<!-- UMIDADE -->
+<div class="card mb-4">
+<h2>Umidade</h2>
+<p id="hum">--</p>
+</div>
+
+<!-- LED -->
+<div class="card mb-4">
+<button onclick="toggleLED()" id="btnLED">Ligar Luz</button>
+</div>
+
+<!-- AR -->
+<div class="card mb-4">
+<h2>Ar Condicionado</h2>
+
+<p id="setpoint">22°</p>
+
+<button onclick="mudarTemp(-1)">-</button>
+<button onclick="mudarTemp(1)">+</button>
+
+<br><br>
+
+<button onclick="sendIR('ac_on')">Ligar</button>
+<button onclick="sendIR('ac_off')">Desligar</button>
+</div>
+
+<!-- TV -->
+<div class="card mb-4">
+<h2>TV</h2>
+
+<button onclick="sendIR('tv_power')">Power</button>
+<button onclick="sendIR('tv_vol_up')">Vol +</button>
+<button onclick="sendIR('tv_vol_down')">Vol -</button>
+</div>
+
 <script>
 firebase.initializeApp({
-    apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
-    authDomain: "controle-led-esp-oficial.firebaseapp.com",
-    databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
-    projectId: "controle-led-esp-oficial"
+apiKey: "SUA_API",
+authDomain: "SEU_DOMINIO",
+databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com"
 });
 
 const db = firebase.database();
-const auth = firebase.auth();
 
-let config = { setpoint: 22, acAuto: false, marca_ac: "MIDEA" };
+let setpoint = 22;
 
-// ================= REALTIME =================
-auth.onAuthStateChanged(user => {
-    if (!user) {
-        window.location.replace("index.html");
-        return;
-    }
-
-    db.ref("/config_alertas").on("value", s => {
-        const val = s.val() || {};
-        config = {...config, ...val};
-
-        document.getElementById("headerCliente").innerText = val.cliente || "CONECTADO";
-        document.getElementById("acAlvoDisplay").innerText = (val.setpoint || 22) + "°";
-        document.getElementById("acModalTemp").innerText = (val.setpoint || 22) + "°";
-
-        document.getElementById("cfgCliente").value = val.cliente || "";
-        document.getElementById("cfgLocal").value = val.local || "";
-        document.getElementById("cfgMarcaAC").value = val.marca_ac || "MIDEA";
-    });
-
-    db.ref("/temp").on("value", s => {
-        const v = parseFloat(s.val()) || 0;
-        document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
-    });
-
-    db.ref("/hum").on("value", s => {
-        const v = parseFloat(s.val()) || 0;
-        document.getElementById("humVal").innerText = v.toFixed(0) + "%";
-    });
-
-    db.ref("/led").on("value", s => {
-        const estado = s.val();
-        const btn = document.getElementById("btnLED");
-
-        btn.innerText = estado == 1 ? "DESLIGAR" : "LIGAR";
-        btn.style.backgroundColor = estado == 1 ? "#00b2a9" : "#002b49";
-    });
+// 🔥 TEMPERATURA REALTIME
+db.ref("/temp").on("value", s => {
+document.getElementById("temp").innerText = s.val() + " °C";
 });
 
-// ================= LED =================
-function toggleLED() {
-    db.ref("/led").once("value").then(s => {
-        db.ref("/led").set(s.val() == 1 ? 0 : 1);
-    });
+// 🔥 UMIDADE REALTIME
+db.ref("/hum").on("value", s => {
+document.getElementById("hum").innerText = s.val() + " %";
+});
+
+// 🔥 LED
+db.ref("/led").on("value", s => {
+const estado = s.val();
+document.getElementById("btnLED").innerText = estado ? "Desligar Luz" : "Ligar Luz";
+});
+
+// 🔥 SETPOINT
+db.ref("/config_alertas/setpoint").on("value", s => {
+setpoint = s.val() || 22;
+document.getElementById("setpoint").innerText = setpoint + "°";
+});
+
+// 🔥 FUNÇÕES
+
+function toggleLED(){
+db.ref("/led").once("value").then(s=>{
+db.ref("/led").set(s.val() ? 0 : 1);
+});
 }
 
-// ================= AC INTELIGENTE =================
-function ajustarSetpoint(v) {
-    const novo = (config.setpoint || 22) + v;
-
-    if (novo < 16 || novo > 30) return;
-
-    // Atualiza interface
-    db.ref("/config_alertas/setpoint").set(novo);
-
-    // 🔥 ENVIA ESTADO REAL PRO ESP
-    db.ref("/config_ar").update({
-        temp: novo,
-        marca: config.marca_ac || "MIDEA",
-        power: true
-    });
+function sendIR(cmd){
+db.ref("/ir_system/execute").set({
+command: cmd,
+ts: Date.now()
+});
 }
 
-// ================= LIGAR/DESLIGAR =================
-function ligarAC() {
-    db.ref("/config_ar").update({
-        power: true,
-        temp: config.setpoint || 22,
-        marca: config.marca_ac || "MIDEA"
-    });
+function mudarTemp(valor){
+
+let novo = setpoint + valor;
+
+// 🔥 LIMITE SEGURO
+if(novo < 16) novo = 16;
+if(novo > 30) novo = 30;
+
+db.ref("/config_alertas/setpoint").set(novo);
+
+// 🔥 ENVIA COMANDO REAL
+if(valor > 0){
+sendIR("ac_temp_up");
+}else{
+sendIR("ac_temp_down");
 }
 
-function desligarAC() {
-    db.ref("/config_ar").update({
-        power: false
-    });
 }
-
-// ================= AUTO =================
-function toggleAuto() {
-    db.ref("/config_alertas/acAuto").set(!config.acAuto);
-}
-
-// ================= SALVAR CONFIG =================
-function salvarConfig() {
-    const data = {
-        cliente: document.getElementById("cfgCliente").value,
-        local: document.getElementById("cfgLocal").value,
-        marca_ac: document.getElementById("cfgMarcaAC").value
-    };
-
-    db.ref("/config_alertas").update(data)
-    .then(() => alert("Configurações salvas!"));
-}
-
-// ================= IR (SÓ PRA TV AGORA) =================
-function sendIR(cmd) {
-    db.ref("/ir_system/execute").set({
-        command: cmd,
-        ts: Date.now()
-    });
-}
-
-// ================= LEARN =================
-function startLearn(f) {
-    db.ref("/ir_system/learn").set({
-        active: true,
-        function: f,
-        ts: Date.now()
-    });
-
-    alert("Modo de gravação: " + f);
-}
-
-// ================= UI =================
-const abrirModal = id => document.getElementById(id).classList.remove('hidden');
-const fecharModal = id => document.getElementById(id).classList.add('hidden');
-
-function fazerLogout() {
-    auth.signOut().then(() => window.location.replace("index.html"));
-}
-
-// ADMIN
-let cliques = 0;
-document.getElementById("logoAdmin").onclick = () => {
-    cliques++;
-    if (cliques >= 5) {
-        document.getElementById("adminDrawer").classList.toggle('open');
-        cliques = 0;
-    }
-    setTimeout(() => cliques = 0, 3000);
-};
 </script>
+
+</body>
+</html>
