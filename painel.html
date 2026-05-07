@@ -154,12 +154,15 @@
         <select id="cfgMarca" class="admin-input">
             <option value="20">Midea / Carrier / Springer</option>
             <option value="19">Philco / Elgin / Silvermaxx</option>
-            <option value="6">LG</option>
+            <option value="6">LG (Nativo)</option>
             <option value="15">Gree</option>
+            <option value="3">Samsung (Nativo)</option>
+            <option value="1">Daikin (Nativo)</option>
+            <option value="2">Mitsubishi (Nativo)</option>
+            <option value="11">Panasonic (Nativo)</option>
             <option value="31">TCL</option>
-            <option value="3">Samsung</option>
-            <option value="36">Consul / Brastemp</option>
             <option value="34">Electrolux</option>
+            <option value="36">Consul / Brastemp</option>
         </select>
 
         <div class="mt-8 pt-4 border-t border-slate-100">
@@ -171,6 +174,8 @@
                 <button onclick="iniciarCaptura('ac_temp_down')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-slate-100 transition-colors">Gravar TEMP -</button>
                 <button onclick="iniciarCaptura('ac_mode_cool')" class="text-[9px] bg-blue-50 p-2 rounded border hover:bg-blue-100 transition-colors">Gravar MODO FRIO</button>
                 <button onclick="iniciarCaptura('ac_mode_fan')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-slate-100 transition-colors">Gravar MODO VENT</button>
+                <button onclick="iniciarCaptura('ac_mode_dry')" class="text-[9px] bg-cyan-50 p-2 rounded border border-cyan-100 hover:bg-cyan-100 transition-colors">Gravar MODO SECO</button>
+                <button onclick="iniciarCaptura('ac_mode_auto')" class="text-[9px] bg-purple-50 p-2 rounded border border-purple-100 hover:bg-purple-100 transition-colors">Gravar MODO AUTO</button>
             </div>
 
             <h4 class="label-tiny mb-4 text-emerald-600">Captura de TV / Outros (RAW)</h4>
@@ -179,11 +184,6 @@
                 <button onclick="iniciarCaptura('tv_mute')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar MUTE</button>
                 <button onclick="iniciarCaptura('tv_vol_up')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar VOL +</button>
                 <button onclick="iniciarCaptura('tv_vol_down')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar VOL -</button>
-                <button onclick="iniciarCaptura('tv_ch_up')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar CH +</button>
-                <button onclick="iniciarCaptura('tv_ch_down')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar CH -</button>
-                <button onclick="iniciarCaptura('tv_input')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar INPUT</button>
-                <button onclick="iniciarCaptura('tv_netflix')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar NETFLIX</button>
-                <button onclick="iniciarCaptura('tv_youtube')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar YOUTUBE</button>
             </div>
             <p id="statusCaptura" class="text-[8px] mt-4 text-slate-400 italic text-center">Aguardando comando...</p>
         </div>
@@ -202,11 +202,9 @@
         const auth = firebase.auth();
         let config = { setpoint: 22, power: false, marca_ac: 20, ac_mode: "cool" };
 
-        // Observadores de Estado
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.replace("index.html"); return; }
 
-            // Configurações do Ar e Unidade
             db.ref("/config_alertas").on("value", s => {
                 const val = s.val() || {}; 
                 config = {...config, ...val};
@@ -225,7 +223,6 @@
                 if(val.ac_mode) document.getElementById(`mode_${val.ac_mode}`)?.classList.add('active');
             });
 
-            // Telemetria
             db.ref("/telemetria/temperatura").on("value", s => {
                 const v = parseFloat(s.val()) || 0;
                 document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
@@ -238,7 +235,6 @@
                 updateGauge('humGauge', v, 100);
             });
 
-            // Status da Luz (LED)
             db.ref("/led").on("value", s => {
                 const estado = s.val();
                 const btn = document.getElementById("btnLED");
@@ -249,7 +245,6 @@
             });
         });
 
-        // Funções de Controle
         function updateGauge(id, val, max) {
             const gauge = document.getElementById(id);
             if(!gauge) return;
@@ -269,7 +264,6 @@
         function iniciarCaptura(funcao) {
             const status = document.getElementById("statusCaptura");
             status.innerText = `ESP32 EM MODO ESCUTA: ACIONE O BOTÃO NO CONTROLE...`;
-            status.classList.remove("text-slate-400");
             status.classList.add("text-emerald-500", "font-bold");
             
             db.ref("/ir_system/execute").set({ 
@@ -280,34 +274,27 @@
 
             setTimeout(() => {
                 status.innerText = "Aguardando comando...";
-                status.classList.replace("text-emerald-500", "text-slate-400");
-                status.classList.remove("font-bold");
+                status.classList.remove("text-emerald-500", "font-bold");
             }, 15000);
         }
 
-        // Handlers de UI
         function toggleACPower() { setACParam('power', !config.power); }
         function ajustarSetpoint(v) { 
             const novo = (config.setpoint || 22) + v;
             if (novo >= 16 && novo <= 30) setACParam('setpoint', novo);
         }
         function sendIR(cmd) { 
-            db.ref("/ir_system/execute").set({ 
-                command: cmd, 
-                ts: firebase.database.ServerValue.TIMESTAMP 
-            }); 
+            db.ref("/ir_system/execute").set({ command: cmd, ts: firebase.database.ServerValue.TIMESTAMP }); 
         }
         function toggleLED() { 
             db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); 
         }
         
-        // Modais e Admin
         const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
         const fecharModal = (id) => document.getElementById(id).classList.add('hidden');
         const toggleAdmin = () => document.getElementById("adminDrawer").classList.toggle('open');
         function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
-        // Salvamento de Configurações Admin
         document.getElementById("cfgCliente").addEventListener('change', (e) => {
             db.ref("/config_alertas").update({ cliente: e.target.value });
         });
@@ -315,7 +302,6 @@
             db.ref("/config_alertas").update({ marca_ac: parseInt(e.target.value) });
         });
 
-        // Clique secreto na logo para Admin
         let cliques = 0;
         document.getElementById("logoAdmin").onclick = () => {
             cliques++;
@@ -323,7 +309,6 @@
             setTimeout(() => cliques = 0, 3000);
         };
 
-        // Arrastar cards
         Sortable.create(document.getElementById('drag-container'), { animation: 250, ghostClass: 'opacity-50' });
     </script>
 </body>
