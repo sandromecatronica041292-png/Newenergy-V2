@@ -158,11 +158,27 @@
             <label class="label-tiny">Cliente / Unidade</label>
             <input type="text" id="cfgCliente" class="admin-input" placeholder="Ex: PANORAMA - SALA 01">
 
-            <label class="label-tiny">Salvar em Modelo:</label>
+            <label class="label-tiny">Protocolo / Marca</label>
+            <select id="cfgMarca" class="admin-input">
+                <option value="0">--- Marca Memorizada (RAW) ---</option>
+                <option value="20">Midea / Carrier / Springer (V20)</option>
+                <option value="19">Philco / Elgin / Silvermaxx</option>
+                <option value="6">LG (Nativo)</option>
+                <option value="3">Samsung (Nativo)</option>
+                <option value="1">Daikin (Nativo)</option>
+                <option value="2">Mitsubishi (Nativo)</option>
+                <option value="15">Gree</option>
+                <option value="11">Panasonic</option>
+                <option value="31">TCL</option>
+                <option value="34">Electrolux</option>
+            </select>
+
+            <label class="label-tiny">Banco de Memória (RAW)</label>
             <select id="cfgModeloMemorizado" class="admin-input mb-4">
-                <option value="default">Padrão (Default)</option>
-                <option value="modelo_01">Modelo 01</option>
-                <option value="modelo_02">Modelo 02</option>
+                <option value="default">Pasta Principal (Padrão)</option>
+                <option value="modelo_01">Modelo 01 (Sala Técnica)</option>
+                <option value="modelo_02">Modelo 02 (Consultório)</option>
+                <option value="modelo_03">Modelo 03 (Recepção)</option>
             </select>
 
             <div class="flex border-b border-slate-200 mb-6">
@@ -171,43 +187,24 @@
             </div>
 
             <div id="tab-ar" class="tab-content active">
-                <label class="label-tiny">Protocolo Nativo/Universal</label>
-                <select id="cfgMarca" class="admin-input">
-                    <option value="20">Midea / Carrier / Springer</option>
-                    <option value="19">Philco / Elgin / Silvermaxx</option>
-                    <option value="6">LG (Nativo)</option>
-                    <option value="15">Gree</option>
-                    <option value="3">Samsung (Nativo)</option>
-                    <option value="1">Daikin (Nativo)</option>
-                    <option value="2">Mitsubishi (Nativo)</option>
-                    <option value="11">Panasonic</option>
-                    <option value="31">TCL</option>
-                    <option value="34">Electrolux</option>
-                </select>
-
-                <h4 class="label-tiny mb-3 text-rose-600">Comandos RAW (Ar)</h4>
+                <h4 class="label-tiny mb-3 text-rose-600">Comandos Ar Condicionado</h4>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="iniciarCaptura('ac_on')" class="text-[9px] bg-emerald-50 p-2 rounded border border-emerald-100 font-bold">LIGAR (ON)</button>
                     <button onclick="iniciarCaptura('ac_off')" class="text-[9px] bg-rose-50 p-2 rounded border border-rose-100 font-bold">DESLIGAR (OFF)</button>
                     <button onclick="iniciarCaptura('ac_temp_up')" class="text-[9px] bg-slate-50 p-2 rounded border">TEMP +</button>
                     <button onclick="iniciarCaptura('ac_temp_down')" class="text-[9px] bg-slate-50 p-2 rounded border">TEMP -</button>
-                    <button onclick="iniciarCaptura('ac_mode_cool')" class="text-[9px] bg-blue-50 p-2 rounded border text-blue-600">FRIO</button>
-                    <button onclick="iniciarCaptura('ac_mode_fan')" class="text-[9px] bg-slate-50 p-2 rounded border">VENT</button>
-                    <button onclick="iniciarCaptura('ac_mode_dry')" class="text-[9px] bg-cyan-50 p-2 rounded border text-cyan-600">SECO</button>
-                    <button onclick="iniciarCaptura('ac_mode_auto')" class="text-[9px] bg-purple-50 p-2 rounded border text-purple-600">AUTO</button>
+                    <button onclick="iniciarCaptura('ac_mode_cool')" class="text-[9px] bg-blue-50 p-2 rounded border text-blue-600">MODO FRIO</button>
+                    <button onclick="iniciarCaptura('ac_mode_auto')" class="text-[9px] bg-purple-50 p-2 rounded border text-purple-600">MODO AUTO</button>
                 </div>
             </div>
 
             <div id="tab-tv" class="tab-content">
-                <h4 class="label-tiny mb-3 text-blue-600">Comandos RAW (TV)</h4>
+                <h4 class="label-tiny mb-3 text-blue-600">Comandos TV</h4>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="iniciarCaptura('tv_power')" class="text-[9px] bg-slate-50 p-2 rounded border font-bold">TV POWER</button>
-                    <button onclick="iniciarCaptura('tv_mute')" class="text-[9px] bg-slate-50 p-2 rounded border">TV MUTE</button>
+                    <button onclick="iniciarCaptura('tv_input')" class="text-[9px] bg-slate-50 p-2 rounded border">INPUT / SOURCE</button>
                     <button onclick="iniciarCaptura('tv_vol_up')" class="text-[9px] bg-slate-50 p-2 rounded border">VOL +</button>
                     <button onclick="iniciarCaptura('tv_vol_down')" class="text-[9px] bg-slate-50 p-2 rounded border">VOL -</button>
-                    <button onclick="iniciarCaptura('tv_ch_up')" class="text-[9px] bg-slate-50 p-2 rounded border">CH +</button>
-                    <button onclick="iniciarCaptura('tv_ch_down')" class="text-[9px] bg-slate-50 p-2 rounded border">CH -</button>
-                    <button onclick="iniciarCaptura('tv_input')" class="text-[9px] bg-slate-50 p-2 rounded border">INPUT</button>
                     <button onclick="iniciarCaptura('tv_netflix')" class="text-[9px] bg-slate-900 text-white p-2 rounded">NETFLIX</button>
                     <button onclick="iniciarCaptura('tv_youtube')" class="text-[9px] bg-red-600 text-white p-2 rounded">YOUTUBE</button>
                 </div>
@@ -220,6 +217,7 @@
     </div>
 
     <script>
+        // Configurações do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
             authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -229,11 +227,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
+
         let config = { setpoint: 22, power: false, marca_ac: 20, ac_mode: "cool" };
 
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.replace("index.html"); return; }
             
+            // Sync Configuração Principal
             db.ref("/config_alertas").on("value", s => {
                 const val = s.val() || {}; 
                 config = {...config, ...val};
@@ -241,7 +241,7 @@
                 document.getElementById("acAlvoDisplay").innerText = (val.setpoint || 22) + "°";
                 document.getElementById("acModalTemp").innerText = (val.setpoint || 22) + "°";
                 document.getElementById("cfgCliente").value = val.cliente || "";
-                document.getElementById("cfgMarca").value = val.marca_ac || 20;
+                document.getElementById("cfgMarca").value = val.marca_ac || 0;
                 
                 const badge = document.getElementById("badgeAC");
                 badge.innerText = val.power ? "LIGADO" : "DESLIGADO";
@@ -252,18 +252,19 @@
                 if(val.ac_mode) document.getElementById(`mode_${val.ac_mode}`)?.classList.add('active');
             });
 
+            // Sync Telemetria
             db.ref("/telemetria/temperatura").on("value", s => {
                 const v = parseFloat(s.val()) || 0;
                 document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
                 updateGauge('tempGauge', v, 50);
             });
-
             db.ref("/telemetria/umidade").on("value", s => {
                 const v = parseFloat(s.val()) || 0;
                 document.getElementById("humVal").innerText = v.toFixed(0) + "%";
                 updateGauge('humGauge', v, 100);
             });
 
+            // Sync LED
             db.ref("/led").on("value", s => {
                 const estado = s.val();
                 const btn = document.getElementById("btnLED");
@@ -274,7 +275,7 @@
             });
         });
 
-        // FUNÇÕES CORRIGIDAS CIRURGICAMENTE
+        // Funções de Interface
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -290,6 +291,7 @@
             gauge.style.strokeDasharray = `${circumference * percentage} ${circumference}`;
         }
 
+        // COMANDOS
         function setACParam(key, value) {
             let update = {};
             update[key] = value;
@@ -301,10 +303,9 @@
         function iniciarCaptura(funcao) {
             const status = document.getElementById("statusCaptura");
             const modelo = document.getElementById("cfgModeloMemorizado").value;
-            status.innerText = `ESCUTANDO: APERTE ${funcao}...`;
+            status.innerText = `MODO LEARN: APERTE ${funcao.replace('ac_','').replace('tv_','')}...`;
             status.style.color = "#00b2a9";
             
-            // Envia objeto completo para o ESP32 saber o que fazer
             db.ref("/ir_system/execute").set({ 
                 command: "learn_mode", 
                 target: funcao, 
@@ -315,7 +316,7 @@
             setTimeout(() => {
                 status.innerText = "Aguardando comando...";
                 status.style.color = "#64748b";
-            }, 10000);
+            }, 8000);
         }
 
         function toggleACPower() { setACParam('power', !config.power); }
@@ -323,7 +324,11 @@
             const novo = (config.setpoint || 22) + v;
             if (novo >= 16 && novo <= 30) setACParam('setpoint', novo);
         }
-        function sendIR(cmd) { db.ref("/ir_system/execute").set(cmd); }
+        function sendIR(cmd) { 
+            const marcaAtiva = document.getElementById("cfgMarca").value;
+            // Se marca for 0, o ESP32 sabe que deve procurar na pasta de modelos
+            db.ref("/ir_system/execute").set(cmd); 
+        }
         function toggleLED() { db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); }
         
         const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
@@ -331,12 +336,9 @@
         const toggleAdmin = () => document.getElementById("adminDrawer").classList.toggle('open');
         function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
-        document.getElementById("cfgCliente").addEventListener('change', (e) => {
-            db.ref("/config_alertas").update({ cliente: e.target.value });
-        });
-        document.getElementById("cfgMarca").addEventListener('change', (e) => {
-            db.ref("/config_alertas").update({ marca_ac: parseInt(e.target.value) });
-        });
+        // Eventos Admin
+        document.getElementById("cfgCliente").addEventListener('change', (e) => db.ref("/config_alertas").update({ cliente: e.target.value }));
+        document.getElementById("cfgMarca").addEventListener('change', (e) => db.ref("/config_alertas").update({ marca_ac: parseInt(e.target.value) }));
 
         let cliques = 0;
         document.getElementById("logoAdmin").onclick = () => {
