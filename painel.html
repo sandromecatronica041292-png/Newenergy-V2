@@ -28,7 +28,6 @@
         .label-tiny { font-size: 0.6rem !important; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: #64748b; }
         .admin-input { @apply w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm mb-3 outline-none focus:border-[#00b2a9]; }
         
-        /* Estilos das Abas de Engenharia */
         .tab-btn { @apply flex-1 py-2 text-[9px] font-bold uppercase border-b-2 border-transparent text-slate-400 transition-all; }
         .tab-btn.active { @apply border-navy text-navy; }
         .tab-content { display: none; }
@@ -49,7 +48,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-base tracking-tight leading-none">NewEnergy</h1>
-                    <span id="headerCliente" class="text-[9px] text-slate-400 font-medium">CARREGANDO...</span>
+                    <span id="headerCliente" class="text-[9px] text-slate-400 font-medium">CONECTANDO...</span>
                 </div>
             </div>
             <button onclick="fazerLogout()" class="text-[10px] font-black text-rose-500 btn-active-effect">SAIR</button>
@@ -79,7 +78,7 @@
                 <div>
                     <h4 class="text-sm font-bold">Iluminação</h4>
                     <span class="label-tiny block mb-3">SALA PRINCIPAL</span>
-                    <button id="btnLED" onclick="toggleLED()" class="w-full py-2.5 bg-navy text-white rounded-lg font-bold text-[10px] uppercase tracking-widest btn-active-effect">AGUARDANDO...</button>
+                    <button id="btnLED" onclick="toggleLED()" class="w-full py-2.5 bg-navy text-white rounded-lg font-bold text-[10px] uppercase tracking-widest btn-active-effect">CARREGANDO...</button>
                 </div>
             </div>
 
@@ -154,16 +153,13 @@
             <h3 class="font-bold text-sm text-navy uppercase tracking-widest">Painel de Serviço</h3>
             <button onclick="toggleAdmin()" class="text-slate-400 p-2 hover:text-navy transition-colors">✕</button>
         </div>
-
         <div class="p-6">
             <label class="label-tiny">Cliente / Unidade</label>
             <input type="text" id="cfgCliente" class="admin-input" placeholder="Ex: PANORAMA - SALA 01">
-
             <div class="flex border-b border-slate-200 mb-6">
                 <button onclick="switchTab('tab-ar')" id="btn-tab-ar" class="tab-btn active">Captura Ar</button>
                 <button onclick="switchTab('tab-tv')" id="btn-tab-tv" class="tab-btn">Captura TV</button>
             </div>
-
             <div id="tab-ar" class="tab-content active">
                 <label class="label-tiny">Protocolo Nativo/Universal</label>
                 <select id="cfgMarca" class="admin-input">
@@ -178,34 +174,14 @@
                     <option value="31">TCL</option>
                     <option value="34">Electrolux</option>
                 </select>
-
                 <h4 class="label-tiny mb-3 text-rose-600">Comandos RAW (Ar)</h4>
                 <div class="grid grid-cols-2 gap-2">
                     <button onclick="iniciarCaptura('ac_on')" class="text-[9px] bg-emerald-50 p-2 rounded border border-emerald-100 font-bold">LIGAR (ON)</button>
                     <button onclick="iniciarCaptura('ac_off')" class="text-[9px] bg-rose-50 p-2 rounded border border-rose-100 font-bold">DESLIGAR (OFF)</button>
                     <button onclick="iniciarCaptura('ac_temp_up')" class="text-[9px] bg-slate-50 p-2 rounded border">TEMP +</button>
                     <button onclick="iniciarCaptura('ac_temp_down')" class="text-[9px] bg-slate-50 p-2 rounded border">TEMP -</button>
-                    <button onclick="iniciarCaptura('ac_mode_cool')" class="text-[9px] bg-blue-50 p-2 rounded border text-blue-600">FRIO</button>
-                    <button onclick="iniciarCaptura('ac_mode_fan')" class="text-[9px] bg-slate-50 p-2 rounded border">VENT</button>
-                    <button onclick="iniciarCaptura('ac_mode_dry')" class="text-[9px] bg-cyan-50 p-2 rounded border text-cyan-600">SECO</button>
-                    <button onclick="iniciarCaptura('ac_mode_auto')" class="text-[9px] bg-purple-50 p-2 rounded border text-purple-600">AUTO</button>
                 </div>
             </div>
-
-            <div id="tab-tv" class="tab-content">
-                <h4 class="label-tiny mb-3 text-blue-600">Comandos RAW (TV)</h4>
-                <div class="grid grid-cols-2 gap-2">
-                    <button onclick="iniciarCaptura('tv_power')" class="text-[9px] bg-slate-50 p-2 rounded border font-bold">TV POWER</button>
-                    <button onclick="iniciarCaptura('tv_mute')" class="text-[9px] bg-slate-50 p-2 rounded border">TV MUTE</button>
-                    <button onclick="iniciarCaptura('tv_vol_up')" class="text-[9px] bg-slate-50 p-2 rounded border">VOL +</button>
-                    <button onclick="iniciarCaptura('tv_vol_down')" class="text-[9px] bg-slate-50 p-2 rounded border">VOL -</button>
-                    <button onclick="iniciarCaptura('tv_ch_up')" class="text-[9px] bg-slate-50 p-2 rounded border">CH +</button>
-                    <button onclick="iniciarCaptura('tv_ch_down')" class="text-[9px] bg-slate-50 p-2 rounded border">CH -</button>
-                    <button onclick="iniciarCaptura('tv_netflix')" class="text-[9px] bg-slate-900 text-white p-2 rounded">NETFLIX</button>
-                    <button onclick="iniciarCaptura('tv_youtube')" class="text-[9px] bg-red-600 text-white p-2 rounded">YOUTUBE</button>
-                </div>
-            </div>
-
             <div class="mt-8 pt-4 border-t border-slate-100 text-center">
                 <p id="statusCaptura" class="text-[9px] text-slate-400 italic">Aguardando comando...</p>
             </div>
@@ -213,7 +189,6 @@
     </div>
 
     <script>
-        // Configuração Firebase (Mantenha as suas chaves originais aqui)
         const firebaseConfig = {
             apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
             authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -229,7 +204,6 @@
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.replace("index.html"); return; }
             
-            // Listeners Firebase
             db.ref("/config_alertas").on("value", s => {
                 const val = s.val() || {}; 
                 config = {...config, ...val};
@@ -270,14 +244,25 @@
             });
         });
 
-        // Funções de Interface
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            document.getElementById('btn-' + tabId).classList.add('active');
+        // CIRÚRGICO: Função corrigida para enviar String simples que o ESP32 entende
+        function setACParam(key, value) {
+            let update = {};
+            update[key] = value;
+            db.ref("/config_alertas").update(update).then(() => {
+                // ESP32 faz cmdPayload.indexOf("ac_update"), por isso enviamos como string
+                db.ref("/ir_system/execute").set("ac_update");
+            });
         }
 
+        function sendIR(cmd) { 
+            db.ref("/ir_system/execute").set(cmd); 
+        }
+
+        function toggleLED() { 
+            db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); 
+        }
+
+        // Funções de Interface Auxiliares
         function updateGauge(id, val, max) {
             const gauge = document.getElementById(id);
             if(!gauge) return;
@@ -286,47 +271,23 @@
             gauge.style.strokeDasharray = `${circumference * percentage} ${circumference}`;
         }
 
-        function setACParam(key, value) {
-            let update = {};
-            update[key] = value;
-            db.ref("/config_alertas").update(update).then(() => {
-                db.ref("/ir_system/execute").set({ command: "ac_update", ts: firebase.database.ServerValue.TIMESTAMP });
-            });
-        }
-
-        function iniciarCaptura(funcao) {
-            const status = document.getElementById("statusCaptura");
-            status.innerText = `ESCUTANDO: APERTE O BOTÃO NO CONTROLE...`;
-            status.style.color = "#00b2a9";
-            
-            db.ref("/ir_system/execute").set({ 
-                command: "learn_mode", 
-                target: funcao, 
-                ts: firebase.database.ServerValue.TIMESTAMP 
-            });
-
-            setTimeout(() => {
-                status.innerText = "Aguardando comando...";
-                status.style.color = "#64748b";
-            }, 10000);
-        }
-
         function toggleACPower() { setACParam('power', !config.power); }
         function ajustarSetpoint(v) { 
             const novo = (config.setpoint || 22) + v;
             if (novo >= 16 && novo <= 30) setACParam('setpoint', novo);
-        }
-        function sendIR(cmd) { 
-            db.ref("/ir_system/execute").set({ command: cmd, ts: firebase.database.ServerValue.TIMESTAMP }); 
-        }
-        function toggleLED() { 
-            db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); 
         }
         
         const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
         const fecharModal = (id) => document.getElementById(id).classList.add('hidden');
         const toggleAdmin = () => document.getElementById("adminDrawer").classList.toggle('open');
         function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
 
         document.getElementById("cfgCliente").addEventListener('change', (e) => {
             db.ref("/config_alertas").update({ cliente: e.target.value });
@@ -335,7 +296,6 @@
             db.ref("/config_alertas").update({ marca_ac: parseInt(e.target.value) });
         });
 
-        // Clique secreto no Logo (5 vezes) para abrir o painel
         let cliques = 0;
         document.getElementById("logoAdmin").onclick = () => {
             cliques++;
