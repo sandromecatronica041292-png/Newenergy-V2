@@ -28,10 +28,15 @@
         .label-tiny { font-size: 0.6rem !important; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: #64748b; }
         .admin-input { @apply w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm mb-3 outline-none focus:border-[#00b2a9]; }
         
+        /* Estilos das Abas de Engenharia */
+        .tab-btn { @apply flex-1 py-2 text-[9px] font-bold uppercase border-b-2 border-transparent text-slate-400 transition-all; }
+        .tab-btn.active { @apply border-navy text-navy; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
         .ac-mode-btn { @apply flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all btn-active-effect text-slate-500 bg-slate-50; border: 2px solid transparent; }
         .ac-mode-btn.active { @apply bg-[#002b49] text-[#00b2a9] border-[#00b2a9]; transform: scale(1.05); }
         .ac-icon-circle { @apply w-11 h-11 bg-white rounded-full flex items-center justify-center border border-slate-100; }
-        .ac-mode-btn.active .ac-icon-circle { @apply bg-white/10 border-none; }
     </style>
 </head>
 <body class="pb-10">
@@ -144,59 +149,78 @@
         </div>
     </div>
 
-    <div id="adminDrawer" class="fixed top-0 right-0 h-full w-72 bg-white shadow-2xl p-6 overflow-y-auto">
-        <div class="flex justify-between items-center mb-8"><h3 class="font-bold text-lg text-navy">Engenharia</h3><button onclick="toggleAdmin()" class="text-slate-400">✕</button></div>
-        
-        <label class="label-tiny">Cliente / Unidade</label>
-        <input type="text" id="cfgCliente" class="admin-input" placeholder="Ex: PANORAMA - SALA 01">
+    <div id="adminDrawer" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl overflow-y-auto">
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+            <h3 class="font-bold text-sm text-navy uppercase tracking-widest">Painel de Serviço</h3>
+            <button onclick="toggleAdmin()" class="text-slate-400 p-2 hover:text-navy transition-colors">✕</button>
+        </div>
 
-        <label class="label-tiny">Protocolo do Ar (IR Universal)</label>
-        <select id="cfgMarca" class="admin-input">
-            <option value="20">Midea / Carrier / Springer</option>
-            <option value="19">Philco / Elgin / Silvermaxx</option>
-            <option value="6">LG (Nativo)</option>
-            <option value="15">Gree</option>
-            <option value="3">Samsung (Nativo)</option>
-            <option value="1">Daikin (Nativo)</option>
-            <option value="2">Mitsubishi (Nativo)</option>
-            <option value="11">Panasonic (Nativo)</option>
-            <option value="31">TCL</option>
-            <option value="34">Electrolux</option>
-            <option value="36">Consul / Brastemp</option>
-        </select>
+        <div class="p-6">
+            <label class="label-tiny">Cliente / Unidade</label>
+            <input type="text" id="cfgCliente" class="admin-input" placeholder="Ex: PANORAMA - SALA 01">
 
-        <div class="mt-8 pt-4 border-t border-slate-100">
-            <h4 class="label-tiny mb-4 text-rose-600">Captura de Ar Condicionado (RAW)</h4>
-            <div class="grid grid-cols-2 gap-2 mb-8">
-                <button onclick="iniciarCaptura('ac_on')" class="text-[9px] bg-emerald-50 p-2 rounded border border-emerald-100 hover:bg-emerald-100 transition-colors">Gravar LIGAR (ON)</button>
-                <button onclick="iniciarCaptura('ac_off')" class="text-[9px] bg-rose-50 p-2 rounded border border-rose-100 hover:bg-rose-100 transition-colors">Gravar DESLIGAR (OFF)</button>
-                <button onclick="iniciarCaptura('ac_temp_up')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-slate-100 transition-colors">Gravar TEMP +</button>
-                <button onclick="iniciarCaptura('ac_temp_down')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-slate-100 transition-colors">Gravar TEMP -</button>
-                <button onclick="iniciarCaptura('ac_mode_cool')" class="text-[9px] bg-blue-50 p-2 rounded border hover:bg-blue-100 transition-colors">Gravar MODO FRIO</button>
-                <button onclick="iniciarCaptura('ac_mode_fan')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-slate-100 transition-colors">Gravar MODO VENT</button>
-                <button onclick="iniciarCaptura('ac_mode_dry')" class="text-[9px] bg-cyan-50 p-2 rounded border border-cyan-100 hover:bg-cyan-100 transition-colors">Gravar MODO SECO</button>
-                <button onclick="iniciarCaptura('ac_mode_auto')" class="text-[9px] bg-purple-50 p-2 rounded border border-purple-100 hover:bg-purple-100 transition-colors">Gravar MODO AUTO</button>
+            <div class="flex border-b border-slate-200 mb-6">
+                <button onclick="switchTab('tab-ar')" id="btn-tab-ar" class="tab-btn active">Captura Ar</button>
+                <button onclick="switchTab('tab-tv')" id="btn-tab-tv" class="tab-btn">Captura TV</button>
             </div>
 
-            <h4 class="label-tiny mb-4 text-emerald-600">Captura de TV / Outros (RAW)</h4>
-            <div class="grid grid-cols-2 gap-2" id="gridCaptura">
-                <button onclick="iniciarCaptura('tv_power')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar POWER</button>
-                <button onclick="iniciarCaptura('tv_mute')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar MUTE</button>
-                <button onclick="iniciarCaptura('tv_vol_up')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar VOL +</button>
-                <button onclick="iniciarCaptura('tv_vol_down')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50 transition-colors">Gravar VOL -</button>
+            <div id="tab-ar" class="tab-content active">
+                <label class="label-tiny">Protocolo Nativo/Universal</label>
+                <select id="cfgMarca" class="admin-input">
+                    <option value="20">Midea / Carrier / Springer</option>
+                    <option value="19">Philco / Elgin / Silvermaxx</option>
+                    <option value="6">LG (Nativo)</option>
+                    <option value="15">Gree</option>
+                    <option value="3">Samsung (Nativo)</option>
+                    <option value="1">Daikin (Nativo)</option>
+                    <option value="2">Mitsubishi (Nativo)</option>
+                    <option value="11">Panasonic</option>
+                    <option value="31">TCL</option>
+                    <option value="34">Electrolux</option>
+                </select>
+
+                <h4 class="label-tiny mb-3 text-rose-600">Comandos RAW (Ar)</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="iniciarCaptura('ac_on')" class="text-[9px] bg-emerald-50 p-2 rounded border border-emerald-100 font-bold">LIGAR (ON)</button>
+                    <button onclick="iniciarCaptura('ac_off')" class="text-[9px] bg-rose-50 p-2 rounded border border-rose-100 font-bold">DESLIGAR (OFF)</button>
+                    <button onclick="iniciarCaptura('ac_temp_up')" class="text-[9px] bg-slate-50 p-2 rounded border">TEMP +</button>
+                    <button onclick="iniciarCaptura('ac_temp_down')" class="text-[9px] bg-slate-50 p-2 rounded border">TEMP -</button>
+                    <button onclick="iniciarCaptura('ac_mode_cool')" class="text-[9px] bg-blue-50 p-2 rounded border text-blue-600">FRIO</button>
+                    <button onclick="iniciarCaptura('ac_mode_fan')" class="text-[9px] bg-slate-50 p-2 rounded border">VENT</button>
+                    <button onclick="iniciarCaptura('ac_mode_dry')" class="text-[9px] bg-cyan-50 p-2 rounded border text-cyan-600">SECO</button>
+                    <button onclick="iniciarCaptura('ac_mode_auto')" class="text-[9px] bg-purple-50 p-2 rounded border text-purple-600">AUTO</button>
+                </div>
             </div>
-            <p id="statusCaptura" class="text-[8px] mt-4 text-slate-400 italic text-center">Aguardando comando...</p>
+
+            <div id="tab-tv" class="tab-content">
+                <h4 class="label-tiny mb-3 text-blue-600">Comandos RAW (TV)</h4>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="iniciarCaptura('tv_power')" class="text-[9px] bg-slate-50 p-2 rounded border font-bold">TV POWER</button>
+                    <button onclick="iniciarCaptura('tv_mute')" class="text-[9px] bg-slate-50 p-2 rounded border">TV MUTE</button>
+                    <button onclick="iniciarCaptura('tv_vol_up')" class="text-[9px] bg-slate-50 p-2 rounded border">VOL +</button>
+                    <button onclick="iniciarCaptura('tv_vol_down')" class="text-[9px] bg-slate-50 p-2 rounded border">VOL -</button>
+                    <button onclick="iniciarCaptura('tv_ch_up')" class="text-[9px] bg-slate-50 p-2 rounded border">CH +</button>
+                    <button onclick="iniciarCaptura('tv_ch_down')" class="text-[9px] bg-slate-50 p-2 rounded border">CH -</button>
+                    <button onclick="iniciarCaptura('tv_netflix')" class="text-[9px] bg-slate-900 text-white p-2 rounded">NETFLIX</button>
+                    <button onclick="iniciarCaptura('tv_youtube')" class="text-[9px] bg-red-600 text-white p-2 rounded">YOUTUBE</button>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-slate-100 text-center">
+                <p id="statusCaptura" class="text-[9px] text-slate-400 italic">Aguardando comando...</p>
+            </div>
         </div>
     </div>
 
     <script>
-        // Configuração Firebase
-        firebase.initializeApp({
+        // Configuração Firebase (Mantenha as suas chaves originais aqui)
+        const firebaseConfig = {
             apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
             authDomain: "controle-led-esp-oficial.firebaseapp.com",
             databaseURL: "https://controle-led-esp-oficial-default-rtdb.firebaseio.com",
             projectId: "controle-led-esp-oficial"
-        });
+        };
+        firebase.initializeApp(firebaseConfig);
 
         const db = firebase.database();
         const auth = firebase.auth();
@@ -204,7 +228,8 @@
 
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.replace("index.html"); return; }
-
+            
+            // Listeners Firebase
             db.ref("/config_alertas").on("value", s => {
                 const val = s.val() || {}; 
                 config = {...config, ...val};
@@ -245,6 +270,14 @@
             });
         });
 
+        // Funções de Interface
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.getElementById('btn-' + tabId).classList.add('active');
+        }
+
         function updateGauge(id, val, max) {
             const gauge = document.getElementById(id);
             if(!gauge) return;
@@ -263,8 +296,8 @@
 
         function iniciarCaptura(funcao) {
             const status = document.getElementById("statusCaptura");
-            status.innerText = `ESP32 EM MODO ESCUTA: ACIONE O BOTÃO NO CONTROLE...`;
-            status.classList.add("text-emerald-500", "font-bold");
+            status.innerText = `ESCUTANDO: APERTE O BOTÃO NO CONTROLE...`;
+            status.style.color = "#00b2a9";
             
             db.ref("/ir_system/execute").set({ 
                 command: "learn_mode", 
@@ -274,8 +307,8 @@
 
             setTimeout(() => {
                 status.innerText = "Aguardando comando...";
-                status.classList.remove("text-emerald-500", "font-bold");
-            }, 15000);
+                status.style.color = "#64748b";
+            }, 10000);
         }
 
         function toggleACPower() { setACParam('power', !config.power); }
@@ -302,6 +335,7 @@
             db.ref("/config_alertas").update({ marca_ac: parseInt(e.target.value) });
         });
 
+        // Clique secreto no Logo (5 vezes) para abrir o painel
         let cliques = 0;
         document.getElementById("logoAdmin").onclick = () => {
             cliques++;
