@@ -48,7 +48,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-base tracking-tight leading-none">NewEnergy</h1>
-                    <span id="headerCliente" class="text-[9px] text-slate-400 font-medium">CARREGANDO...</span>
+                    <span id="headerCliente" class="text-[9px] text-slate-400 font-medium">CONECTANDO...</span>
                 </div>
             </div>
             <button onclick="fazerLogout()" class="text-[10px] font-black text-rose-500 btn-active-effect">SAIR</button>
@@ -213,6 +213,7 @@
     </div>
 
     <script>
+        // CONFIGURAÇÃO FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
             authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -225,9 +226,11 @@
         const auth = firebase.auth();
         let config = { setpoint: 22, power: false, marca_ac: 20, ac_mode: "cool" };
 
+        // MONITORAMENTO DE AUTENTICAÇÃO E DADOS
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.replace("index.html"); return; }
             
+            // Monitor de Configuração AC
             db.ref("/config_alertas").on("value", s => {
                 const val = s.val() || {}; 
                 config = {...config, ...val};
@@ -246,6 +249,7 @@
                 if(val.ac_mode) document.getElementById(`mode_${val.ac_mode}`)?.classList.add('active');
             });
 
+            // Telemetria em Tempo Real
             db.ref("/telemetria/temperatura").on("value", s => {
                 const v = parseFloat(s.val()) || 0;
                 document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
@@ -258,6 +262,7 @@
                 updateGauge('humGauge', v, 100);
             });
 
+            // Controle de LED Nativo
             db.ref("/led").on("value", s => {
                 const estado = s.val();
                 const btn = document.getElementById("btnLED");
@@ -267,6 +272,57 @@
                 document.getElementById("ledEmoji").innerText = estado == 1 ? "💡" : "⚫";
             });
         });
+
+        // --- FUNÇÕES DE COMANDO CIRÚRGICAS ---
+
+        function setACParam(key, value) {
+            let update = {};
+            
+            // Garante tipagem correta para o firmware (Números em vez de Strings)
+            if (key === 'setpoint' || key === 'marca_ac') {
+                value = parseInt(value);
+            }
+            
+            update[key] = value;
+            
+            // 1. Atualiza os parâmetros do ar
+            db.ref("/config_alertas").update(update).then(() => {
+                // 2. Dispara o gatilho único para o ESP32 processar
+                db.ref("/ir_system/execute").set("ac_update_" + Date.now());
+            });
+        }
+
+        function sendIR(cmd) { 
+            // Comando único com timestamp para garantir detecção pelo loop do ESP32
+            db.ref("/ir_system/execute").set(cmd + "_" + Date.now()); 
+        }
+
+        function iniciarCaptura(funcao) {
+            const status = document.getElementById("statusCaptura");
+            status.innerText = `ESCUTANDO: APERTE O BOTÃO...`;
+            status.style.color = "#00b2a9";
+            
+            db.ref("/ir_system/execute").set("learn_mode_" + funcao + "_" + Date.now());
+
+            setTimeout(() => {
+                status.innerText = "Aguardando comando...";
+                status.style.color = "#64748b";
+            }, 10000);
+        }
+
+        // --- INTERFACE E MODAIS ---
+
+        function toggleACPower() { setACParam('power', !config.power); }
+        
+        function ajustarSetpoint(v) { 
+            const atual = parseInt(config.setpoint) || 22;
+            const novo = atual + v;
+            if (novo >= 16 && novo <= 30) setACParam('setpoint', novo);
+        }
+        
+        function toggleLED() { 
+            db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); 
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -283,59 +339,21 @@
             gauge.style.strokeDasharray = `${circumference * percentage} ${circumference}`;
         }
 
-        function setACParam(key, value) {
-            let update = {};
-            update[key] = value;
-            db.ref("/config_alertas").update(update).then(() => {
-                // Gatilho de execução: String com timestamp para o ESP32 detectar mudança
-                db.ref("/ir_system/execute").set("ac_update_" + Date.now());
-            });
-        }
-
-        function iniciarCaptura(funcao) {
-            const status = document.getElementById("statusCaptura");
-            status.innerText = `ESCUTANDO: APERTE O BOTÃO NO CONTROLE...`;
-            status.style.color = "#00b2a9";
-            
-            // Learn mode como string para o ESP32
-            db.ref("/ir_system/execute").set("learn_mode_" + funcao + "_" + Date.now());
-
-            setTimeout(() => {
-                status.innerText = "Aguardando comando...";
-                status.style.color = "#64748b";
-            }, 10000);
-        }
-
-        function toggleACPower() { setACParam('power', !config.power); }
-        
-        function ajustarSetpoint(v) { 
-            const atual = parseInt(config.setpoint) || 22;
-            const novo = atual + v;
-            if (novo >= 16 && novo <= 30) setACParam('setpoint', novo);
-        }
-        
-        function sendIR(cmd) { 
-            // Comando IR como string com timestamp
-            db.ref("/ir_system/execute").set(cmd + "_" + Date.now()); 
-        }
-        
-        function toggleLED() { 
-            db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); 
-        }
-        
         const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
         const fecharModal = (id) => document.getElementById(id).classList.add('hidden');
         const toggleAdmin = () => document.getElementById("adminDrawer").classList.toggle('open');
         function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
+        // LISTENERS DE CONFIGURAÇÃO
         document.getElementById("cfgCliente").addEventListener('change', (e) => {
             db.ref("/config_alertas").update({ cliente: e.target.value });
         });
         
         document.getElementById("cfgMarca").addEventListener('change', (e) => {
-            db.ref("/config_alertas").update({ marca_ac: parseInt(e.target.value) });
+            setACParam('marca_ac', e.target.value);
         });
 
+        // ACESSO AO PAINEL (5 cliques no logo)
         let cliques = 0;
         document.getElementById("logoAdmin").onclick = () => {
             cliques++;
@@ -343,6 +361,7 @@
             setTimeout(() => cliques = 0, 3000);
         };
 
+        // Arrastar e Organizar Cards
         Sortable.create(document.getElementById('drag-container'), { animation: 250, ghostClass: 'opacity-50' });
     </script>
 </body>
