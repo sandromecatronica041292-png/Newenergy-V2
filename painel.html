@@ -21,15 +21,13 @@
         .gauge-container { position: relative; width: 120px; height: 65px; overflow: hidden; }
         .gauge-bg { fill: none; stroke: #f1f5f9; stroke-width: 10; }
         .gauge-fill { fill: none; stroke: var(--green); stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
-        .modal-blur { backdrop-filter: blur(12px); background: rgba(0, 43, 73, 0.4); }
+        .modal-blur { backdrop-filter: blur(12px); background: rgba(0, 43, 73, 0.4); z-index: 60; }
         .btn-tv { @apply bg-slate-100 text-slate-700 rounded-xl font-bold text-[11px] py-3 flex items-center justify-center transition-all; box-shadow: 0 4px 0 #cbd5e1; }
         .btn-tv:active { transform: translateY(3px); box-shadow: 0 1px 0 #cbd5e1; background-color: #e2e8f0; }
-        #adminDrawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); }
+        #adminDrawer { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform: translateX(100%); z-index: 100; }
         #adminDrawer.open { transform: translateX(0); }
         .label-tiny { font-size: 0.6rem !important; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: #64748b; }
         .admin-input { @apply w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm mb-3 outline-none focus:border-[#00b2a9]; }
-        
-        /* ESTILOS NOVOS DOS BOTÕES DO AR */
         .ac-mode-btn { @apply flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all btn-active-effect text-slate-500 bg-slate-50; }
         .ac-mode-btn.active { @apply bg-[#002b49] text-[#00b2a9]; }
         .ac-icon-circle { @apply w-11 h-11 bg-white rounded-full flex items-center justify-center border border-slate-100; }
@@ -55,7 +53,6 @@
     </nav>
 
     <main class="max-w-6xl mx-auto px-6 mt-6">
-        <!-- GAUGES DE TELEMETRIA -->
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="card-premium p-4 flex flex-col items-center">
                 <span class="label-tiny mb-2">TEMPERATURA</span>
@@ -80,7 +77,6 @@
         </div>
 
         <div id="drag-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <!-- ILUMINAÇÃO -->
             <div class="card-premium p-5 flex flex-col justify-between aspect-square" data-id="luz">
                 <div class="flex justify-between items-start">
                      <div id="ledIconBox" class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center transition-all">
@@ -91,11 +87,10 @@
                 <div>
                     <h4 class="text-sm font-bold">Iluminação</h4>
                     <span class="label-tiny block mb-3">SALA PRINCIPAL</span>
-                    <button id="btnLED" onclick="toggleLED()" class="w-full py-2.5 bg-navy text-white rounded-lg font-bold text-[10px] uppercase tracking-widest btn-active-effect">CARREGANDO...</button>
+                    <button id="btnLED" onclick="toggleLED()" class="w-full py-2.5 bg-navy text-white rounded-lg font-bold text-[10px] uppercase tracking-widest btn-active-effect">...</button>
                 </div>
             </div>
 
-            <!-- AR CONDICIONADO -->
             <div onclick="abrirModal('acModal')" class="card-premium p-5 flex flex-col justify-between aspect-square btn-active-effect" data-id="ac">
                 <div class="flex justify-between items-start">
                     <div class="w-10 h-10 bg-emerald-50 text-[#00b2a9] rounded-xl flex items-center justify-center">
@@ -109,7 +104,6 @@
                 </div>
             </div>
 
-            <!-- SMART TV -->
             <div onclick="abrirModal('tvModal')" class="card-premium p-5 flex flex-col justify-between aspect-square btn-active-effect" data-id="tv">
                 <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 4V2M17 4V2M3 8h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg>
@@ -120,10 +114,9 @@
                 </div>
             </div>
 
-            <!-- HISTÓRICO/DADOS -->
             <div onclick="window.location.href='historico.html'" class="card-premium p-5 flex flex-col justify-between aspect-square bg-[#002b49] border-none text-white btn-active-effect" data-id="data">
                 <div class="w-10 h-10 bg-white/10 text-[#00b2a9] rounded-xl flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2"></path></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"></path></svg>
                 </div>
                 <div>
                     <h4 class="text-white text-sm font-bold">Performance</h4>
@@ -133,8 +126,7 @@
         </div>
     </main>
 
-    <!-- MODAL AR CONDICIONADO (CORRIGIDO) -->
-    <div id="acModal" class="hidden fixed inset-0 z-[60] modal-blur flex items-center justify-center p-4">
+    <div id="acModal" class="hidden fixed inset-0 modal-blur flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden">
             <div class="bg-[#002b49] p-8 text-center text-white relative">
                 <span class="label-tiny text-white/50">AJUSTE DE CLIMATIZAÇÃO</span>
@@ -143,65 +135,81 @@
                     <span id="acModalTemp" class="text-5xl font-light w-20">--°</span>
                     <button onclick="ajustarSetpoint(1)" class="w-12 h-12 rounded-full border border-white/20 btn-active-effect">＋</button>
                 </div>
-                <!-- Botão Power no Header -->
                 <button onclick="toggleACPower()" id="acPowerBtnModal" class="absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 btn-active-effect">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0M12 9v4"></path></svg>
                 </button>
             </div>
-
             <div class="p-6">
-                <!-- SELETOR DE MODO -->
-                <div class="mb-6">
-                    <h5 class="label-tiny mb-3 text-center">Modo de Operação</h5>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="setACParam('ac_mode', 'cool')" id="mode_cool" class="ac-mode-btn">
-                            <div class="ac-icon-circle">❄️</div>
-                            <span class="ac-label">Frio</span>
-                        </button>
-                        <button onclick="setACParam('ac_mode', 'dry')" id="mode_dry" class="ac-mode-btn">
-                            <div class="ac-icon-circle">💧</div>
-                            <span class="ac-label">Seco</span>
-                        </button>
-                        <button onclick="setACParam('ac_mode', 'fan')" id="mode_fan" class="ac-mode-btn">
-                            <div class="ac-icon-circle">🌀</div>
-                            <span class="ac-label">Vent</span>
-                        </button>
-                        <button onclick="setACParam('ac_mode', 'auto')" id="mode_auto" class="ac-mode-btn">
-                            <div class="ac-icon-circle">🅰️</div>
-                            <span class="ac-label">Auto</span>
-                        </button>
-                    </div>
+                <h5 class="label-tiny mb-3 text-center">Modo de Operação</h5>
+                <div class="grid grid-cols-4 gap-2 mb-6">
+                    <button onclick="setACParam('ac_mode', 'cool')" id="mode_cool" class="ac-mode-btn"><div class="ac-icon-circle">❄️</div><span class="ac-label">Frio</span></button>
+                    <button onclick="setACParam('ac_mode', 'dry')" id="mode_dry" class="ac-mode-btn"><div class="ac-icon-circle">💧</div><span class="ac-label">Seco</span></button>
+                    <button onclick="setACParam('ac_mode', 'fan')" id="mode_fan" class="ac-mode-btn"><div class="ac-icon-circle">🌀</div><span class="ac-label">Vent</span></button>
+                    <button onclick="setACParam('ac_mode', 'auto')" id="mode_auto" class="ac-mode-btn"><div class="ac-icon-circle">🅰️</div><span class="ac-label">Auto</span></button>
                 </div>
-
-                <!-- SELETOR DE VELOCIDADE -->
-                <div class="mb-4">
-                    <h5 class="label-tiny mb-3 text-center">Velocidade do Fan</h5>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="setACParam('ac_fan', 'low')" id="fan_low" class="ac-mode-btn">
-                            <div class="ac-icon-circle text-xs">MIN</div>
-                            <span class="ac-label">Baixa</span>
-                        </button>
-                        <button onclick="setACParam('ac_fan', 'high')" id="fan_high" class="ac-mode-btn">
-                            <div class="ac-icon-circle text-xs">MAX</div>
-                            <span class="ac-label">Alta</span>
-                        </button>
-                        <button onclick="setACParam('ac_fan', 'auto')" id="fan_auto" class="ac-mode-btn">
-                            <div class="ac-icon-circle text-xs">AUTO</div>
-                            <span class="ac-label">Auto</span>
-                        </button>
-                    </div>
+                <h5 class="label-tiny mb-3 text-center">Velocidade</h5>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setACParam('ac_fan', 'low')" id="fan_low" class="ac-mode-btn"><div class="ac-icon-circle text-[10px]">MIN</div><span class="ac-label">Baixa</span></button>
+                    <button onclick="setACParam('ac_fan', 'high')" id="fan_high" class="ac-mode-btn"><div class="ac-icon-circle text-[10px]">MAX</div><span class="ac-label">Alta</span></button>
+                    <button onclick="setACParam('ac_fan', 'auto')" id="fan_auto" class="ac-mode-btn"><div class="ac-icon-circle text-[10px]">AUTO</div><span class="ac-label">Auto</span></button>
                 </div>
-
-                <button onclick="fecharModal('acModal')" class="w-full py-2 text-slate-300 text-[10px] font-bold tracking-widest mt-2">VOLTAR</button>
+                <button onclick="fecharModal('acModal')" class="w-full py-4 text-slate-300 text-[10px] font-bold tracking-widest mt-4">FECHAR</button>
             </div>
         </div>
     </div>
 
-    <!-- OS DEMAIS MODAIS E O ADMIN DRAWER PERMANECEM IGUAIS -->
-    <!-- (Omitidos aqui para brevidade, mas você deve mantê-los no seu arquivo) -->
+    <div id="tvModal" class="hidden fixed inset-0 modal-blur flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-xs rounded-3xl shadow-2xl overflow-hidden p-6">
+            <div class="text-center mb-6">
+                <span class="label-tiny">Controle Smart TV</span>
+                <div class="flex justify-center mt-4">
+                    <button onclick="sendIR('tv_power')" class="w-14 h-14 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg btn-active-effect">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <button onclick="sendIR('tv_vol_up')" class="btn-tv">VOL +</button>
+                <button onclick="sendIR('tv_mute')" class="btn-tv">MUTE</button>
+                <button onclick="sendIR('tv_ch_up')" class="btn-tv">CH +</button>
+                <button onclick="sendIR('tv_vol_down')" class="btn-tv">VOL -</button>
+                <button onclick="sendIR('tv_input')" class="btn-tv">INPUT</button>
+                <button onclick="sendIR('tv_ch_down')" class="btn-tv">CH -</button>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button onclick="sendIR('tv_netflix')" class="py-3 bg-slate-800 text-white rounded-xl font-bold text-[10px] btn-active-effect">NETFLIX</button>
+                <button onclick="sendIR('tv_youtube')" class="py-3 bg-rose-600 text-white rounded-xl font-bold text-[10px] btn-active-effect">YOUTUBE</button>
+            </div>
+            <button onclick="fecharModal('tvModal')" class="w-full py-2 text-slate-400 text-[10px] font-bold tracking-widest mt-2 uppercase">FECHAR</button>
+        </div>
+    </div>
+
+    <div id="adminDrawer" class="fixed top-0 right-0 h-full w-72 bg-white shadow-2xl p-6 overflow-y-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h3 class="font-bold text-lg">Engenharia</h3>
+            <button onclick="toggleAdmin()" class="text-slate-400">✕</button>
+        </div>
+        
+        <label class="label-tiny">Cliente / Unidade</label>
+        <input type="text" id="cfgCliente" class="admin-input" onchange="db.ref('/config_alertas').update({cliente: this.value})">
+
+        <label class="label-tiny">Fabricante do Ar</label>
+        <select id="cfgMarca" class="admin-input" onchange="db.ref('/config_alertas').update({marca_ac: this.value})">
+            <option value="MIDEA">Midea / Carrier / Comfee</option>
+            <option value="LG">LG</option>
+            <option value="GREE">Gree</option>
+            <option value="ELGIN">Elgin</option>
+            <option value="TCL">TCL</option>
+            <option value="HISENSE">Hisense</option>
+            <option value="SILVERMAXX">Silvermaxx</option>
+        </select>
+
+        <div class="mt-10 pt-6 border-t border-slate-100">
+            <p class="text-[9px] text-slate-300 font-bold uppercase">NewEnergy v3.4.2 PRO</p>
+        </div>
+    </div>
 
     <script>
-        // CONFIGURAÇÃO FIREBASE
         firebase.initializeApp({
             apiKey: "AIzaSyCLnGnSEpqacBtseenPaS8CxHtZW0iD96I",
             authDomain: "controle-led-esp-oficial.firebaseapp.com",
@@ -224,30 +232,25 @@
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.replace("index.html"); return; }
 
-            // Sync Config Ar Condicionado
             db.ref("/config_alertas").on("value", s => {
                 const val = s.val() || {}; 
                 config = {...config, ...val};
-                
-                document.getElementById("headerCliente").innerText = val.cliente || "SISTEMA ONLINE";
+                document.getElementById("headerCliente").innerText = val.cliente || "OFFLINE";
                 document.getElementById("acAlvoDisplay").innerText = (val.setpoint || 22) + "°";
                 document.getElementById("acModalTemp").innerText = (val.setpoint || 22) + "°";
+                document.getElementById("cfgCliente").value = val.cliente || "";
+                document.getElementById("cfgMarca").value = val.marca_ac || "MIDEA";
                 
-                // Status Power
                 const badge = document.getElementById("badgeAC");
                 badge.innerText = val.power ? "LIGADO" : "DESLIGADO";
                 badge.className = val.power ? "label-tiny bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md" : "label-tiny bg-rose-50 text-rose-600 px-2 py-0.5 rounded-md";
-                
-                const pwrBtn = document.getElementById("acPowerBtnModal");
-                pwrBtn.style.backgroundColor = val.power ? "#00b2a9" : "transparent";
+                document.getElementById("acPowerBtnModal").style.backgroundColor = val.power ? "#00b2a9" : "transparent";
 
-                // Atualizar destaque dos botões de Modo e Fan
                 document.querySelectorAll('.ac-mode-btn').forEach(b => b.classList.remove('active'));
                 if(val.ac_mode) document.getElementById(`mode_${val.ac_mode}`)?.classList.add('active');
                 if(val.ac_fan) document.getElementById(`fan_${val.ac_fan}`)?.classList.add('active');
             });
 
-            // Telemetria Sensores
             db.ref("/telemetria/temperatura").on("value", s => {
                 const v = parseFloat(s.val()) || 0;
                 document.getElementById("tempVal").innerText = v.toFixed(1) + "°C";
@@ -260,19 +263,15 @@
                 updateGauge('humGauge', v, 100);
             });
 
-            // Status LED
             db.ref("/led").on("value", s => {
                 const estado = s.val();
                 const btn = document.getElementById("btnLED");
-                const dot = document.getElementById("ledStatusDot");
                 btn.innerText = estado == 1 ? "DESLIGAR" : "LIGAR";
                 btn.style.backgroundColor = estado == 1 ? "#00b2a9" : "#002b49";
-                dot.className = estado == 1 ? "w-2.5 h-2.5 rounded-full bg-[#00b2a9] animate-pulse" : "w-2.5 h-2.5 rounded-full bg-slate-200";
+                document.getElementById("ledStatusDot").className = estado == 1 ? "w-2.5 h-2.5 rounded-full bg-[#00b2a9] animate-pulse" : "w-2.5 h-2.5 rounded-full bg-slate-200";
                 document.getElementById("ledEmoji").innerText = estado == 1 ? "💡" : "⚫";
             });
         });
-
-        // --- FUNÇÕES DE COMANDO ---
 
         function setACParam(key, value) {
             let update = {};
@@ -282,14 +281,10 @@
             });
         }
 
-        function toggleACPower() {
-            setACParam('power', !config.power);
-        }
-
+        function toggleACPower() { setACParam('power', !config.power); }
         function ajustarSetpoint(v) { 
             const novo = (config.setpoint || 22) + v;
-            if (novo < 16 || novo > 30) return;
-            setACParam('setpoint', novo);
+            if (novo >= 16 && novo <= 30) setACParam('setpoint', novo);
         }
 
         function sendIR(cmd) {
@@ -300,13 +295,11 @@
             db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); 
         }
 
-        // UI UTILS
         const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
         const fecharModal = (id) => document.getElementById(id).classList.add('hidden');
         const toggleAdmin = () => document.getElementById("adminDrawer").classList.toggle('open');
         function fazerLogout() { auth.signOut().then(() => window.location.replace("index.html")); }
 
-        // Ativação oculta do painel de engenharia (5 cliques no logo)
         let cliques = 0;
         document.getElementById("logoAdmin").onclick = () => {
             cliques++;
@@ -314,10 +307,7 @@
             setTimeout(() => cliques = 0, 3000);
         };
 
-        Sortable.create(document.getElementById('drag-container'), {
-            animation: 250,
-            ghostClass: 'opacity-20'
-        });
+        Sortable.create(document.getElementById('drag-container'), { animation: 250 });
     </script>
 </body>
 </html>
