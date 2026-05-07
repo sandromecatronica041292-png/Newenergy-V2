@@ -193,15 +193,26 @@
         <label class="label-tiny">Cliente / Unidade</label>
         <input type="text" id="cfgCliente" class="admin-input" onchange="db.ref('/config_alertas').update({cliente: this.value})">
 
-        <label class="label-tiny">Fabricante do Ar</label>
-        <select id="cfgMarca" class="admin-input" onchange="db.ref('/config_alertas').update({marca_ac: this.value})">
-            <option value="MIDEA">Midea / Carrier / Comfee</option>
-            <option value="LG">LG</option>
-            <option value="GREE">Gree</option>
-            <option value="ELGIN">Elgin</option>
-            <option value="TCL">TCL</option>
-            <option value="HISENSE">Hisense</option>
-            <option value="SILVERMAXX">Silvermaxx</option>
+        <label class="label-tiny">Protocolo do Ar (Biblioteca Universal)</label>
+        <select id="cfgMarca" class="admin-input" onchange="db.ref('/config_alertas').update({marca_ac: parseInt(this.value)})">
+            <optgroup label="Principais">
+                <option value="20">Midea / Carrier / Springer</option>
+                <option value="19">Elgin / Silvermaxx / Philco (Coolix)</option>
+                <option value="6">LG</option>
+                <option value="15">Gree</option>
+                <option value="31">TCL</option>
+                <option value="3">Samsung</option>
+                <option value="34">Electrolux</option>
+            </optgroup>
+            <optgroup label="Outros">
+                <option value="11">Daikin</option>
+                <option value="18">Fujitsu</option>
+                <option value="16">Panasonic</option>
+                <option value="25">Hisense</option>
+                <option value="36">Consul (Whirlpool)</option>
+                <option value="13">Hitachi</option>
+                <option value="63">AUX</option>
+            </optgroup>
         </select>
 
         <div class="mt-10 pt-6 border-t border-slate-100">
@@ -219,7 +230,7 @@
 
         const db = firebase.database();
         const auth = firebase.auth();
-        let config = { setpoint: 22, power: false, marca_ac: "MIDEA", ac_mode: "cool", ac_fan: "auto" };
+        let config = { setpoint: 22, power: false, marca_ac: 20, ac_mode: "cool", ac_fan: "auto" };
 
         function updateGauge(id, val, max) {
             const gauge = document.getElementById(id);
@@ -239,7 +250,9 @@
                 document.getElementById("acAlvoDisplay").innerText = (val.setpoint || 22) + "°";
                 document.getElementById("acModalTemp").innerText = (val.setpoint || 22) + "°";
                 document.getElementById("cfgCliente").value = val.cliente || "";
-                document.getElementById("cfgMarca").value = val.marca_ac || "MIDEA";
+                
+                // Atualiza o select com o valor numérico
+                document.getElementById("cfgMarca").value = val.marca_ac || 20;
                 
                 const badge = document.getElementById("badgeAC");
                 badge.innerText = val.power ? "LIGADO" : "DESLIGADO";
@@ -277,6 +290,7 @@
             let update = {};
             update[key] = value;
             db.ref("/config_alertas").update(update).then(() => {
+                // Envia gatilho para o ESP32 processar a mudança
                 db.ref("/ir_system/execute").set({ command: "ac_update", ts: Date.now() });
             });
         }
