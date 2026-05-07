@@ -17,7 +17,6 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: var(--navy); overflow-x: hidden; }
         .btn-active-effect:active { transform: scale(0.96); filter: brightness(1.2); transition: all 0.1s ease; }
         .card-premium { background: white; border-radius: 1.25rem; border: 1px solid #e2e8f0; transition: all 0.2s ease; cursor: grab; user-select: none; }
-        .card-premium:active { cursor: grabbing; transform: scale(0.98); box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
         .gauge-container { position: relative; width: 120px; height: 65px; overflow: hidden; }
         .gauge-bg { fill: none; stroke: #f1f5f9; stroke-width: 10; }
         .gauge-fill { fill: none; stroke: var(--green); stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -28,11 +27,12 @@
         #adminDrawer.open { transform: translateX(0); }
         .label-tiny { font-size: 0.6rem !important; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: #64748b; }
         .admin-input { @apply w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm mb-3 outline-none focus:border-[#00b2a9]; }
-        .ac-mode-btn { @apply flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all btn-active-effect text-slate-500 bg-slate-50; }
-        .ac-mode-btn.active { @apply bg-[#002b49] text-[#00b2a9]; }
+        
+        /* Feedback Visual para Modos de Ar */
+        .ac-mode-btn { @apply flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all btn-active-effect text-slate-500 bg-slate-50; border: 2px solid transparent; }
+        .ac-mode-btn.active { @apply bg-[#002b49] text-[#00b2a9] border-[#00b2a9]; transform: scale(1.05); }
         .ac-icon-circle { @apply w-11 h-11 bg-white rounded-full flex items-center justify-center border border-slate-100; }
         .ac-mode-btn.active .ac-icon-circle { @apply bg-white/10 border-none; }
-        .ac-label { @apply text-[9px] font-bold uppercase text-current; }
     </style>
 </head>
 <body class="pb-10">
@@ -45,7 +45,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-base tracking-tight leading-none">NewEnergy</h1>
-                    <span id="headerCliente" class="text-[9px] text-slate-400 font-medium">CONECTADO</span>
+                    <span id="headerCliente" class="text-[9px] text-slate-400 font-medium">PANORAMA - FUNDAÇÃO JC</span>
                 </div>
             </div>
             <button onclick="fazerLogout()" class="text-[10px] font-black text-rose-500 btn-active-effect">SAIR</button>
@@ -56,22 +56,12 @@
         <div class="grid grid-cols-2 gap-4 mb-6">
             <div class="card-premium p-4 flex flex-col items-center">
                 <span class="label-tiny mb-2">TEMPERATURA</span>
-                <div class="gauge-container">
-                     <svg viewBox="0 0 100 50">
-                        <path class="gauge-bg" d="M10 45 A 35 35 0 0 1 90 45" />
-                        <path id="tempGauge" class="gauge-fill" d="M10 45 A 35 35 0 0 1 90 45" stroke-dasharray="0 126" />
-                    </svg>
-                </div>
+                <div class="gauge-container"><svg viewBox="0 0 100 50"><path class="gauge-bg" d="M10 45 A 35 35 0 0 1 90 45" /><path id="tempGauge" class="gauge-fill" d="M10 45 A 35 35 0 0 1 90 45" stroke-dasharray="0 126" /></svg></div>
                 <h2 id="tempVal" class="text-2xl font-extrabold mt-[-15px]">--°C</h2>
             </div>
             <div class="card-premium p-4 flex flex-col items-center">
                 <span class="label-tiny mb-2">UMIDADE</span>
-                <div class="gauge-container">
-                     <svg viewBox="0 0 100 50">
-                        <path class="gauge-bg" d="M10 45 A 35 35 0 0 1 90 45" />
-                        <path id="humGauge" class="gauge-fill" d="M10 45 A 35 35 0 0 1 90 45" stroke-dasharray="0 126" style="stroke: #3b82f6;" />
-                    </svg>
-                </div>
+                <div class="gauge-container"><svg viewBox="0 0 100 50"><path class="gauge-bg" d="M10 45 A 35 35 0 0 1 90 45" /><path id="humGauge" class="gauge-fill" d="M10 45 A 35 35 0 0 1 90 45" stroke-dasharray="0 126" style="stroke: #3b82f6;" /></svg></div>
                 <h2 id="humVal" class="text-2xl font-extrabold mt-[-15px]">--%</h2>
             </div>
         </div>
@@ -79,9 +69,7 @@
         <div id="drag-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="card-premium p-5 flex flex-col justify-between aspect-square" data-id="luz">
                 <div class="flex justify-between items-start">
-                     <div id="ledIconBox" class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center transition-all">
-                        <span id="ledEmoji" class="text-xl">⚫</span>
-                    </div>
+                     <div id="ledIconBox" class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center transition-all"><span id="ledEmoji" class="text-xl">⚫</span></div>
                     <div id="ledStatusDot" class="w-2.5 h-2.5 rounded-full bg-slate-200"></div>
                 </div>
                 <div>
@@ -93,9 +81,7 @@
 
             <div onclick="abrirModal('acModal')" class="card-premium p-5 flex flex-col justify-between aspect-square btn-active-effect" data-id="ac">
                 <div class="flex justify-between items-start">
-                    <div class="w-10 h-10 bg-emerald-50 text-[#00b2a9] rounded-xl flex items-center justify-center">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </div>
+                    <div class="w-10 h-10 bg-emerald-50 text-[#00b2a9] rounded-xl flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></div>
                     <span id="badgeAC" class="label-tiny bg-slate-50 px-2 py-0.5 rounded-md">STATUS</span>
                 </div>
                 <div>
@@ -105,23 +91,8 @@
             </div>
 
             <div onclick="abrirModal('tvModal')" class="card-premium p-5 flex flex-col justify-between aspect-square btn-active-effect" data-id="tv">
-                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 4V2M17 4V2M3 8h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg>
-                </div>
-                <div>
-                    <h4 class="text-sm font-bold">Smart TV Remote</h4>
-                    <p class="text-[10px] text-blue-500 font-bold mt-1 uppercase tracking-tighter">Abrir Interface</p>
-                </div>
-            </div>
-
-            <div onclick="window.location.href='historico.html'" class="card-premium p-5 flex flex-col justify-between aspect-square bg-[#002b49] border-none text-white btn-active-effect" data-id="data">
-                <div class="w-10 h-10 bg-white/10 text-[#00b2a9] rounded-xl flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2"></path></svg>
-                </div>
-                <div>
-                    <h4 class="text-white text-sm font-bold">Performance</h4>
-                    <p class="text-[10px] text-[#00b2a9] font-bold mt-1">LOGS DE DADOS</p>
-                </div>
+                <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M7 4V2M17 4V2M3 8h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"></path></svg></div>
+                <div><h4 class="text-sm font-bold">Smart TV Remote</h4><p class="text-[10px] text-blue-500 font-bold mt-1 uppercase tracking-tighter">Abrir Interface</p></div>
             </div>
         </div>
     </main>
@@ -135,9 +106,7 @@
                     <span id="acModalTemp" class="text-5xl font-light w-20">--°</span>
                     <button onclick="ajustarSetpoint(1)" class="btn-tv w-14 h-14 !rounded-full !bg-white/10 !text-white !border-white/20 !shadow-none active:!bg-white/20">＋</button>
                 </div>
-                <button onclick="toggleACPower()" id="acPowerBtnModal" class="absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 btn-active-effect">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0M12 9v4"></path></svg>
-                </button>
+                <button onclick="toggleACPower()" id="acPowerBtnModal" class="absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center border border-white/20 btn-active-effect"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M18.364 5.636a9 9 0 11-12.728 0M12 9v4"></path></svg></button>
             </div>
             <div class="p-6">
                 <h5 class="label-tiny mb-3 text-center">Modo de Operação</h5>
@@ -146,12 +115,6 @@
                     <button onclick="setACParam('ac_mode', 'dry')" id="mode_dry" class="ac-mode-btn"><div class="ac-icon-circle">💧</div><span class="ac-label">Seco</span></button>
                     <button onclick="setACParam('ac_mode', 'fan')" id="mode_fan" class="ac-mode-btn"><div class="ac-icon-circle">🌀</div><span class="ac-label">Vent</span></button>
                     <button onclick="setACParam('ac_mode', 'auto')" id="mode_auto" class="ac-mode-btn"><div class="ac-icon-circle">🅰️</div><span class="ac-label">Auto</span></button>
-                </div>
-                <h5 class="label-tiny mb-3 text-center">Velocidade</h5>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="setACParam('ac_fan', 'low')" id="fan_low" class="ac-mode-btn"><div class="ac-icon-circle text-[10px]">MIN</div><span class="ac-label">Baixa</span></button>
-                    <button onclick="setACParam('ac_fan', 'high')" id="fan_high" class="ac-mode-btn"><div class="ac-icon-circle text-[10px]">MAX</div><span class="ac-label">Alta</span></button>
-                    <button onclick="setACParam('ac_fan', 'auto')" id="fan_auto" class="ac-mode-btn"><div class="ac-icon-circle text-[10px]">AUTO</div><span class="ac-label">Auto</span></button>
                 </div>
                 <button onclick="fecharModal('acModal')" class="w-full py-4 text-slate-300 text-[10px] font-bold tracking-widest mt-4">FECHAR</button>
             </div>
@@ -163,9 +126,7 @@
             <div class="text-center mb-6">
                 <span class="label-tiny">Controle Smart TV</span>
                 <div class="flex justify-center mt-4">
-                    <button onclick="sendIR('tv_power')" class="w-14 h-14 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg btn-active-effect">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    </button>
+                    <button onclick="sendIR('tv_power')" class="w-14 h-14 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-lg btn-active-effect"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg></button>
                 </div>
             </div>
             <div class="grid grid-cols-3 gap-3 mb-6">
@@ -185,35 +146,49 @@
     </div>
 
     <div id="adminDrawer" class="fixed top-0 right-0 h-full w-72 bg-white shadow-2xl p-6 overflow-y-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h3 class="font-bold text-lg">Engenharia</h3>
-            <button onclick="toggleAdmin()" class="text-slate-400">✕</button>
-        </div>
+        <div class="flex justify-between items-center mb-8"><h3 class="font-bold text-lg">Engenharia</h3><button onclick="toggleAdmin()" class="text-slate-400">✕</button></div>
         
         <label class="label-tiny">Cliente / Unidade</label>
         <input type="text" id="cfgCliente" class="admin-input" onchange="db.ref('/config_alertas').update({cliente: this.value})">
 
         <label class="label-tiny">Protocolo do Ar (Biblioteca Universal)</label>
         <select id="cfgMarca" class="admin-input" onchange="db.ref('/config_alertas').update({marca_ac: parseInt(this.value)})">
-            <option value="20">Midea / Carrier / Springer</option>
-            <option value="6">LG</option>
-            <option value="15">Gree</option>
-            <option value="3">Samsung</option>
+            <optgroup label="Marcas Principais">
+                <option value="20">Midea / Carrier / Springer / Comfee</option>
+                <option value="19">Elgin / Silvermaxx / Philco (Coolix)</option>
+                <option value="6">LG</option>
+                <option value="15">Gree</option>
+                <option value="31">TCL</option>
+                <option value="25">Hisense</option>
+                <option value="3">Samsung</option>
+                <option value="34">Electrolux</option>
+                <option value="36">Consul / Brastemp (Whirlpool)</option>
+            </optgroup>
+            <optgroup label="Outras Marcas">
+                <option value="11">Daikin</option>
+                <option value="18">Fujitsu</option>
+                <option value="16">Panasonic</option>
+                <option value="13">Hitachi</option>
+                <option value="30">York</option>
+                <option value="42">Trane</option>
+                <option value="63">AUX</option>
+            </optgroup>
         </select>
 
         <div class="mt-8 pt-4 border-t border-slate-100">
             <h4 class="label-tiny mb-4 text-emerald-600">Captura de Controles (IR)</h4>
             <div class="grid grid-cols-2 gap-2">
                 <button onclick="iniciarCaptura('tv_power')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar POWER</button>
+                <button onclick="iniciarCaptura('tv_mute')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar MUTE</button>
                 <button onclick="iniciarCaptura('tv_vol_up')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar VOL +</button>
                 <button onclick="iniciarCaptura('tv_vol_down')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar VOL -</button>
+                <button onclick="iniciarCaptura('tv_ch_up')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar CH +</button>
+                <button onclick="iniciarCaptura('tv_ch_down')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar CH -</button>
+                <button onclick="iniciarCaptura('tv_input')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar INPUT</button>
                 <button onclick="iniciarCaptura('tv_netflix')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar NETFLIX</button>
+                <button onclick="iniciarCaptura('tv_youtube')" class="text-[9px] bg-slate-50 p-2 rounded border hover:bg-emerald-50">Gravar YOUTUBE</button>
             </div>
             <p id="statusCaptura" class="text-[8px] mt-2 text-slate-400 italic">Aguardando comando...</p>
-        </div>
-
-        <div class="mt-10 pt-6 border-t border-slate-100">
-            <p class="text-[9px] text-slate-300 font-bold uppercase">NewEnergy v3.4.2 PRO</p>
         </div>
     </div>
 
@@ -227,15 +202,7 @@
 
         const db = firebase.database();
         const auth = firebase.auth();
-        let config = { setpoint: 22, power: false, marca_ac: 20, ac_mode: "cool", ac_fan: "auto" };
-
-        function updateGauge(id, val, max) {
-            const gauge = document.getElementById(id);
-            if(!gauge) return;
-            const circumference = 126;
-            const percentage = Math.min(val / max, 1);
-            gauge.style.strokeDasharray = `${circumference * percentage} ${circumference}`;
-        }
+        let config = { setpoint: 22, power: false, marca_ac: 20, ac_mode: "cool" };
 
         auth.onAuthStateChanged(user => {
             if (!user) { window.location.replace("index.html"); return; }
@@ -254,9 +221,9 @@
                 badge.className = val.power ? "label-tiny bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-md" : "label-tiny bg-rose-50 text-rose-600 px-2 py-0.5 rounded-md";
                 document.getElementById("acPowerBtnModal").style.backgroundColor = val.power ? "#00b2a9" : "transparent";
 
+                // Atualiza feedback visual dos botões
                 document.querySelectorAll('.ac-mode-btn').forEach(b => b.classList.remove('active'));
                 if(val.ac_mode) document.getElementById(`mode_${val.ac_mode}`)?.classList.add('active');
-                if(val.ac_fan) document.getElementById(`fan_${val.ac_fan}`)?.classList.add('active');
             });
 
             db.ref("/telemetria/temperatura").on("value", s => {
@@ -281,30 +248,12 @@
             });
         });
 
-        // FUNÇÃO DE CAPTURA IR
-        function iniciarCaptura(funcao) {
-            const status = document.getElementById("statusCaptura");
-            status.innerText = `Aponte o controle e aperte ${funcao.replace('tv_', '').toUpperCase()}...`;
-            status.classList.add("text-emerald-500");
-
-            // Sinaliza ao ESP32 para entrar em modo de escuta
-            db.ref("/ir_system/execute").set({ 
-                command: "learn_mode", 
-                target: funcao,
-                ts: Date.now() 
-            });
-
-            // Monitora quando o código chegar no banco
-            db.ref(`/ir_codes/${funcao}`).on('value', (s) => {
-                if(s.exists()) {
-                    status.innerText = "✓ Código capturado e salvo!";
-                    setTimeout(() => {
-                        status.innerText = "Aguardando próxima função...";
-                        status.classList.remove("text-emerald-500");
-                    }, 3000);
-                    db.ref(`/ir_codes/${funcao}`).off(); // Para de ouvir após sucesso
-                }
-            });
+        function updateGauge(id, val, max) {
+            const gauge = document.getElementById(id);
+            if(!gauge) return;
+            const circumference = 126;
+            const percentage = Math.min(val / max, 1);
+            gauge.style.strokeDasharray = `${circumference * percentage} ${circumference}`;
         }
 
         function setACParam(key, value) {
@@ -315,20 +264,20 @@
             });
         }
 
+        function iniciarCaptura(funcao) {
+            const status = document.getElementById("statusCaptura");
+            status.innerText = `Gravando ${funcao.replace('tv_', '').toUpperCase()}...`;
+            status.classList.add("text-emerald-500");
+            db.ref("/ir_system/execute").set({ command: "learn_mode", target: funcao, ts: Date.now() });
+        }
+
         function toggleACPower() { setACParam('power', !config.power); }
         function ajustarSetpoint(v) { 
             const novo = (config.setpoint || 22) + v;
             if (novo >= 16 && novo <= 30) setACParam('setpoint', novo);
         }
-
-        function sendIR(cmd) {
-            db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); 
-        }
-
-        function toggleLED() {
-            db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); 
-        }
-
+        function sendIR(cmd) { db.ref("/ir_system/execute").set({ command: cmd, ts: Date.now() }); }
+        function toggleLED() { db.ref("/led").once("value").then(s => db.ref("/led").set(s.val() == 1 ? 0 : 1)); }
         const abrirModal = (id) => document.getElementById(id).classList.remove('hidden');
         const fecharModal = (id) => document.getElementById(id).classList.add('hidden');
         const toggleAdmin = () => document.getElementById("adminDrawer").classList.toggle('open');
